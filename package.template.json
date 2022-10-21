@@ -1,0 +1,19 @@
+{
+  "name": "flexidy-engine-web",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "flexidy-engine-web.js",
+  "module": "index.js",
+  "typings": "flexidy-engine-web.d.ts",
+  "files": [
+    "index.js",
+    "flexidy-engine-web.js",
+    "flexidy-engine-web.d.ts"
+  ],
+  "dependencies": {
+    "three": "0.145.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.144.0"
+  }
+}

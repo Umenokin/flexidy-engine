@@ -1,0 +1,35 @@
+{
+  "name": "flexidy-engine-web",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/flexidy-engine-web.js",
+  "module": "dist/flexidy-engine-web.ems/index.js",
+  "typings": "dist/flexidy-engine-web.d.ts",
+  "files": [
+    "dist/flexidy-engine-web.ems/**/*",
+    "dist/flexidy-engine-web.js",
+    "dist/flexidy-engine-web.d.ts"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "npm run build -- -w"
+  },
+  "dependencies": {
+    "three": "0.145.0"
+  },
+  "peerDependencies": {
+    "flexidy-engine": "file:../flexidy-engine/dist"
+  },
+  "devDependencies": {
+    "@types/three": "^0.144.0",
+    "esbuild": "^0.15.10",
+    "eslint": "8.25.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-typescript": "17.0.0",
+    "eslint-plugin-import": "2.26.0",
+    "rollup": "^2.79.1",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-dts": "^4.2.2",
+    "rollup-plugin-esbuild": "^4.10.1"
+  }
+}
