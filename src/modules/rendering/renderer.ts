@@ -15,6 +15,6 @@ export class Renderer implements IRenderer {
   }
 
   public render(scene: Scene, camera: Camera): void {
-    this.renderer3js.render(scene.scene3js, camera.object3js);
+    this.renderer3js.render(scene.object3js, camera.object3js);
   }
 }
