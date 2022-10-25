@@ -197,18 +197,6 @@ class OrbitControls extends EventDispatcher {
     // public methods
     //
 
-    this.getPolarAngle = function () {
-      return scope.spherical.phi;
-    };
-
-    this.getAzimuthalAngle = function () {
-      return scope.spherical.theta;
-    };
-
-    this.getDistance = function () {
-      return this.entity.position.distanceTo(this.target);
-    };
-
     this.listenToKeyEvents = function (domEl) {
       domEl.addEventListener('keydown', onKeyDown);
       this._domElementKeyEvents = domElement;
@@ -1009,6 +997,18 @@ class OrbitControls extends EventDispatcher {
     this.originalTarget.copy(this.target);
     this.originalPosition.copy(this.entity.position);
     this.originalZoom = this.camera.zoom;
+  }
+
+  public getPolarAngle(): number {
+    return this.spherical.phi;
+  }
+
+  public getAzimuthalAngle(): number {
+    return this.spherical.theta;
+  }
+
+  public getDistance(): number {
+    return this.entity.position.distanceTo(this.target);
   }
 
   private rotateLeft(angle: number): void {
