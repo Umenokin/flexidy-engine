@@ -14,7 +14,9 @@ import {
   IPerspectiveCamera,
   ORTHOGRAPHIC_CAMERA_COMPONENT_TYPE,
   PERSPECTIVE_CAMERA_COMPONENT_TYPE,
+  Immutable,
 } from 'flexidy-engine';
+import { Matrix4 } from 'flexidy-engine/math/matrix4';
 
 import { EventDispatcher } from 'three';
 
@@ -51,6 +53,8 @@ enum CameraType {
 const _changeEvent = { type: 'change' };
 const _startEvent = { type: 'start' };
 const _endEvent = { type: 'end' };
+
+const _tempVec3 = new Vector3();
 
 class OrbitControls extends EventDispatcher {
   private entity: IEntity;
@@ -133,6 +137,13 @@ class OrbitControls extends EventDispatcher {
 
   protected originalZoom: number;
 
+      // current position in spherical coordinates
+  private spherical = new Spherical();
+
+  private sphericalDelta = new Spherical();
+
+  private panOffset = new Vector3();
+
   constructor(
     entity: IEntity, surface: HTMLElement) {
     super();
@@ -187,11 +198,11 @@ class OrbitControls extends EventDispatcher {
     //
 
     this.getPolarAngle = function () {
-      return spherical.phi;
+      return scope.spherical.phi;
     };
 
     this.getAzimuthalAngle = function () {
-      return spherical.theta;
+      return scope.spherical.theta;
     };
 
     this.getDistance = function () {
@@ -239,18 +250,18 @@ class OrbitControls extends EventDispatcher {
         offset.applyQuaternion(quat);
 
         // angle from z-axis around y-axis
-        spherical.setFromVector3(offset);
+        scope.spherical.setFromVector3(offset);
 
         if (scope.autoRotate && state === STATE.NONE) {
-          rotateLeft(getAutoRotationAngle());
+          scope.rotateLeft(getAutoRotationAngle());
         }
 
         if (scope.enableDamping) {
-          spherical.theta += sphericalDelta.theta * scope.dampingFactor;
-          spherical.phi += sphericalDelta.phi * scope.dampingFactor;
+          scope.spherical.theta += scope.sphericalDelta.theta * scope.dampingFactor;
+          scope.spherical.phi += scope.sphericalDelta.phi * scope.dampingFactor;
         } else {
-          spherical.theta += sphericalDelta.theta;
-          spherical.phi += sphericalDelta.phi;
+          scope.spherical.theta += scope.sphericalDelta.theta;
+          scope.spherical.phi += scope.sphericalDelta.phi;
         }
 
         // restrict theta to be between desired limits
@@ -264,33 +275,33 @@ class OrbitControls extends EventDispatcher {
           if (max < -Math.PI) max += twoPI; else if (max > Math.PI) max -= twoPI;
 
           if (min <= max) {
-            spherical.theta = Math.max(min, Math.min(max, spherical.theta));
+            scope.spherical.theta = Math.max(min, Math.min(max, scope.spherical.theta));
           } else {
-            spherical.theta = (spherical.theta > (min + max) / 2)
-            ? Math.max(min, spherical.theta)
-            : Math.min(max, spherical.theta);
+            scope.spherical.theta = (scope.spherical.theta > (min + max) / 2)
+            ? Math.max(min, scope.spherical.theta)
+            : Math.min(max, scope.spherical.theta);
           }
         }
 
         // restrict phi to be between desired limits
-        spherical.phi = Math.max(scope.minPolarAngle, Math.min(scope.maxPolarAngle, spherical.phi));
+        scope.spherical.phi = Math.max(scope.minPolarAngle, Math.min(scope.maxPolarAngle, scope.spherical.phi));
 
-        spherical.makeSafe();
+        scope.spherical.makeSafe();
 
-        spherical.radius *= scale;
+        scope.spherical.radius *= scale;
 
         // restrict radius to be between desired limits
-        spherical.radius = Math.max(scope.minDistance, Math.min(scope.maxDistance, spherical.radius));
+        scope.spherical.radius = Math.max(scope.minDistance, Math.min(scope.maxDistance, scope.spherical.radius));
 
         // move target to panned location
 
         if (scope.enableDamping === true) {
-          scope.target.addScaledVector(panOffset, scope.dampingFactor);
+          scope.target.addScaledVector(scope.panOffset, scope.dampingFactor);
         } else {
-          scope.target.add(panOffset);
+          scope.target.add(scope.panOffset);
         }
 
-        offset.setFromSpherical(spherical);
+        offset.setFromSpherical(scope.spherical);
 
         // rotate offset back to "camera-up-vector-is-up" space
         offset.applyQuaternion(quatInverse);
@@ -301,14 +312,14 @@ class OrbitControls extends EventDispatcher {
         scope.entity.lookAt = scope.target;
 
         if (scope.enableDamping === true) {
-          sphericalDelta.theta *= (1 - scope.dampingFactor);
-          sphericalDelta.phi *= (1 - scope.dampingFactor);
+          scope.sphericalDelta.theta *= (1 - scope.dampingFactor);
+          scope.sphericalDelta.phi *= (1 - scope.dampingFactor);
 
-          panOffset.multiplyScalar(1 - scope.dampingFactor);
+          scope.panOffset.multiplyScalar(1 - scope.dampingFactor);
         } else {
-          sphericalDelta.set(0, 0, 0);
+          scope.sphericalDelta.set(0, 0, 0);
 
-          panOffset.set(0, 0, 0);
+          scope.panOffset.set(0, 0, 0);
         }
 
         scale = 1;
@@ -371,12 +382,7 @@ class OrbitControls extends EventDispatcher {
 
     const EPS = 0.000001;
 
-    // current position in spherical coordinates
-    const spherical = new Spherical();
-    const sphericalDelta = new Spherical();
-
     let scale = 1;
-    const panOffset = new Vector3();
     let zoomChanged = false;
 
     const rotateStart = new Vector2();
@@ -401,76 +407,6 @@ class OrbitControls extends EventDispatcher {
     function getZoomScale() {
       return 0.95 ** scope.zoomSpeed;
     }
-
-    function rotateLeft(angle) {
-      sphericalDelta.theta -= angle;
-    }
-
-    function rotateUp(angle) {
-      sphericalDelta.phi -= angle;
-    }
-
-    const panLeft = (function () {
-      const v = new Vector3();
-
-      return function (distance, objectMatrix) {
-        v.setFromMatrixColumn(objectMatrix, 0); // get X column of objectMatrix
-        v.multiplyScalar(distance);
-
-        panOffset.add(v);
-      };
-    }());
-
-    const panUp = (function () {
-      const v = new Vector3();
-
-      return function (distance, objectMatrix) {
-        if (scope.screenSpacePanning === true) {
-          v.setFromMatrixColumn(objectMatrix, 1);
-        } else {
-          v.setFromMatrixColumn(objectMatrix, 0);
-          v.crossVectors(scope.entity.up, v);
-        }
-
-        v.multiplyScalar(distance);
-
-        panOffset.add(v);
-      };
-    }());
-
-    // deltaX and deltaY are in pixels; right and down are positive
-    const pan = (function () {
-      const offset = new Vector3();
-
-      return function (deltaX, deltaY) {
-        const element = scope.domElement;
-
-        if (scope.cameraType === CameraType.Perspective) {
-          const cam = scope.camera as IPerspectiveCamera;
-
-          // perspective
-          const position = scope.entity.position;
-          offset.copy(position).sub(scope.target);
-          let targetDistance = offset.length();
-
-          // half of the fov ifs center to top of screen
-          targetDistance *= Math.tan((cam.fov / 2) * Math.PI / 180.0);
-
-          // we use only clientHeight here so aspect ratio does not distort speed
-          panLeft(2 * deltaX * targetDistance / element.clientHeight, scope.entity.matrix);
-          panUp(2 * deltaY * targetDistance / element.clientHeight, scope.entity.matrix);
-        } else if (scope.cameraType === CameraType.Orthographic) {
-          // orthographic
-          const cam = scope.camera as IOrthographicCamera;
-          panLeft(deltaX * (cam.right - cam.left) / cam.zoom / element.clientWidth, scope.entity.matrix);
-          panUp(deltaY * (cam.top - cam.bottom) / cam.zoom / element.clientHeight, scope.entity.matrix);
-        } else {
-          // camera neither orthographic nor perspective
-          console.warn('WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.');
-          scope.enablePan = false;
-        }
-      };
-    }());
 
     function dollyOut(dollyScale) {
       if (scope.cameraType === CameraType.Perspective) {
@@ -521,9 +457,9 @@ class OrbitControls extends EventDispatcher {
 
       const element = scope.domElement;
 
-      rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight); // yes, height
+      scope.rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight); // yes, height
 
-      rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
+      scope.rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
 
       rotateStart.copy(rotateEnd);
 
@@ -551,7 +487,7 @@ class OrbitControls extends EventDispatcher {
 
       panDelta.subVectors(panEnd, panStart).multiplyScalar(scope.panSpeed);
 
-      pan(panDelta.x, panDelta.y);
+      scope.pan(panDelta.x, panDelta.y);
 
       panStart.copy(panEnd);
 
@@ -573,22 +509,22 @@ class OrbitControls extends EventDispatcher {
 
       switch (event.code) {
         case scope.keys.UP:
-          pan(0, scope.keyPanSpeed);
+          scope.pan(0, scope.keyPanSpeed);
           needsUpdate = true;
           break;
 
         case scope.keys.BOTTOM:
-          pan(0, -scope.keyPanSpeed);
+          scope.pan(0, -scope.keyPanSpeed);
           needsUpdate = true;
           break;
 
         case scope.keys.LEFT:
-          pan(scope.keyPanSpeed, 0);
+          scope.pan(scope.keyPanSpeed, 0);
           needsUpdate = true;
           break;
 
         case scope.keys.RIGHT:
-          pan(-scope.keyPanSpeed, 0);
+          scope.pan(-scope.keyPanSpeed, 0);
           needsUpdate = true;
           break;
 
@@ -662,9 +598,9 @@ class OrbitControls extends EventDispatcher {
 
       const element = scope.domElement;
 
-      rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight); // yes, height
+      scope.rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight); // yes, height
 
-      rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
+      scope.rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
 
       rotateStart.copy(rotateEnd);
     }
@@ -683,7 +619,7 @@ class OrbitControls extends EventDispatcher {
 
       panDelta.subVectors(panEnd, panStart).multiplyScalar(scope.panSpeed);
 
-      pan(panDelta.x, panDelta.y);
+      scope.pan(panDelta.x, panDelta.y);
 
       panStart.copy(panEnd);
     }
@@ -1073,6 +1009,64 @@ class OrbitControls extends EventDispatcher {
     this.originalTarget.copy(this.target);
     this.originalPosition.copy(this.entity.position);
     this.originalZoom = this.camera.zoom;
+  }
+
+  private rotateLeft(angle: number): void {
+    this.sphericalDelta.theta -= angle;
+  }
+
+  private rotateUp(angle: number): void {
+    this.sphericalDelta.phi -= angle;
+  }
+
+  private panLeft(distance: number, objectMatrix: Immutable<Matrix4>) {
+    _tempVec3.setFromMatrixColumn(objectMatrix, 0); // get X column of objectMatrix
+    _tempVec3.multiplyScalar(distance);
+
+    this.panOffset.add(_tempVec3);
+  }
+
+  private panUp(distance: number, objectMatrix: Immutable<Matrix4>) {
+    if (this.screenSpacePanning === true) {
+      _tempVec3.setFromMatrixColumn(objectMatrix, 1);
+    } else {
+      _tempVec3.setFromMatrixColumn(objectMatrix, 0);
+      _tempVec3.crossVectors(this.entity.up, _tempVec3);
+    }
+
+    _tempVec3.multiplyScalar(distance);
+
+    this.panOffset.add(_tempVec3);
+  }
+
+  // deltaX and deltaY are in pixels; right and down are positive
+  private pan(deltaX: number, deltaY: number): void {
+    const element = this.domElement;
+
+    if (this.cameraType === CameraType.Perspective) {
+      const cam = this.camera as IPerspectiveCamera;
+
+      // perspective
+      const position = this.entity.position;
+      _tempVec3.copy(position).sub(this.target);
+      let targetDistance = _tempVec3.length();
+
+      // half of the fov ifs center to top of screen
+      targetDistance *= Math.tan((cam.fov / 2) * Math.PI / 180.0);
+
+      // we use only clientHeight here so aspect ratio does not distort speed
+      this.panLeft(2 * deltaX * targetDistance / element.clientHeight, this.entity.matrix);
+      this.panUp(2 * deltaY * targetDistance / element.clientHeight, this.entity.matrix);
+    } else if (this.cameraType === CameraType.Orthographic) {
+      // orthographic
+      const cam = this.camera as IOrthographicCamera;
+      this.panLeft(deltaX * (cam.right - cam.left) / cam.zoom / element.clientWidth, this.entity.matrix);
+      this.panUp(deltaY * (cam.top - cam.bottom) / cam.zoom / element.clientHeight, this.entity.matrix);
+    } else {
+      // camera neither orthographic nor perspective
+      console.warn('WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.');
+      this.enablePan = false;
+    }
   }
 }
 
