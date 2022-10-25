@@ -2,7 +2,9 @@ import { Object3D } from 'three/src/core/Object3D';
 import { IComponent } from 'flexidy-engine/component';
 import { Entity } from './entity';
 
-export class SceneComponent<TObject extends Object3D = Object3D> implements IComponent {
+export abstract class SceneComponent<TObject extends Object3D = Object3D> implements IComponent {
+  public readonly abstract type: number;
+
   constructor(public readonly object3js: TObject) {}
 
   public onAttach(parent: Entity): void {

@@ -33,6 +33,7 @@ export default class RenderingModule implements IRenderingModule {
     far?: number,
   ): PerspectiveCamera {
     const c3js = new PerspectiveCamera3JS(fov, aspect, near, far);
+    c3js.rotateY(Math.PI);
     return new PerspectiveCamera(c3js);
   }
 

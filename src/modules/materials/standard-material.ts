@@ -6,8 +6,8 @@ import { Material } from './material';
 
 export function convertStandardParams(params?: StandardMaterialParams): MeshStandardMaterialParameters|undefined {
   return params ? {
-    color: Cast.color.to3js(params.diffuse),
-    emissive: Cast.color.to3js(params.emissive),
+    color: params.diffuse && Cast.color.to3js(params.diffuse),
+    emissive: params.emissive && Cast.color.to3js(params.emissive),
     emissiveIntensity: params.emissiveIntensity || 1,
   } : undefined;
 }
