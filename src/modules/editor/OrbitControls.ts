@@ -158,6 +158,8 @@ class OrbitControls extends EventDispatcher {
   // the target DOM element for key events
   private keyEventsDom: HTMLElement|null = null;
 
+  private state: ControlState = ControlState.None;
+
   constructor(
     entity: IEntity, surface: HTMLElement) {
     super();
@@ -204,28 +206,11 @@ class OrbitControls extends EventDispatcher {
     this.originalPosition = this.entity.position.clone();
     this.originalZoom = this.camera.zoom;
 
+    this.onKeyDown = this.onKeyDown.bind(this);
 
     //
     // public methods
     //
-
-    this.listenToKeyEvents = function (surface: HTMLElement) {
-      surface.addEventListener('keydown', onKeyDown);
-      this.keyEventsDom = surface;
-    };
-
-    this.reset = function () {
-      scope.target.copy(scope.originalTarget);
-      scope.entity.position.copy(scope.originalPosition);
-      scope.camera.zoom = scope.originalZoom;
-
-      scope.camera.updateProjectionMatrix();
-      scope.dispatchEvent(_changeEvent);
-
-      scope.update();
-
-      state = ControlState.None;
-    };
 
     // this method is exposed, but perhaps it would be better if we can make it private...
     this.update = (function () {
@@ -252,8 +237,8 @@ class OrbitControls extends EventDispatcher {
         // angle from z-axis around y-axis
         scope.spherical.setFromVector3(offset);
 
-        if (scope.autoRotate && state === ControlState.None) {
-          scope.rotateLeft(getAutoRotationAngle());
+        if (scope.autoRotate && scope.state === ControlState.None) {
+          scope.rotateLeft(scope.getAutoRotationAngle());
         }
 
         if (scope.enableDamping) {
@@ -355,7 +340,7 @@ class OrbitControls extends EventDispatcher {
       scope.domElement.removeEventListener('pointerup', onPointerUp);
 
       if (scope.keyEventsDom !== null) {
-        scope.keyEventsDom.removeEventListener('keydown', onKeyDown);
+        scope.keyEventsDom.removeEventListener('keydown', this.onKeyDown);
       }
 
       // scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
@@ -366,8 +351,6 @@ class OrbitControls extends EventDispatcher {
     //
 
     const scope = this;
-
-    let state = ControlState.None;
 
     const EPS = 0.000001;
 
@@ -388,14 +371,6 @@ class OrbitControls extends EventDispatcher {
 
     const pointers = [];
     const pointerPositions = {};
-
-    function getAutoRotationAngle() {
-      return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
-    }
-
-    function getZoomScale() {
-      return 0.95 ** scope.zoomSpeed;
-    }
 
     function dollyOut(dollyScale) {
       if (scope.cameraType === CameraType.Perspective) {
@@ -461,9 +436,9 @@ class OrbitControls extends EventDispatcher {
       dollyDelta.subVectors(dollyEnd, dollyStart);
 
       if (dollyDelta.y > 0) {
-        dollyOut(getZoomScale());
+        dollyOut(scope.getZoomScale());
       } else if (dollyDelta.y < 0) {
-        dollyIn(getZoomScale());
+        dollyIn(scope.getZoomScale());
       }
 
       dollyStart.copy(dollyEnd);
@@ -485,47 +460,12 @@ class OrbitControls extends EventDispatcher {
 
     function handleMouseWheel(event) {
       if (event.deltaY < 0) {
-        dollyIn(getZoomScale());
+        dollyIn(scope.getZoomScale());
       } else if (event.deltaY > 0) {
-        dollyOut(getZoomScale());
+        dollyOut(scope.getZoomScale());
       }
 
       scope.update();
-    }
-
-    function handleKeyDown(event) {
-      let needsUpdate = false;
-
-      switch (event.code) {
-        case scope.keys.UP:
-          scope.pan(0, scope.keyPanSpeed);
-          needsUpdate = true;
-          break;
-
-        case scope.keys.BOTTOM:
-          scope.pan(0, -scope.keyPanSpeed);
-          needsUpdate = true;
-          break;
-
-        case scope.keys.LEFT:
-          scope.pan(scope.keyPanSpeed, 0);
-          needsUpdate = true;
-          break;
-
-        case scope.keys.RIGHT:
-          scope.pan(-scope.keyPanSpeed, 0);
-          needsUpdate = true;
-          break;
-
-        default:
-      }
-
-      if (needsUpdate) {
-        // prevent the browser from scrolling on cursor keys
-        event.preventDefault();
-
-        scope.update();
-      }
     }
 
     function handleTouchStartRotate() {
@@ -689,7 +629,7 @@ class OrbitControls extends EventDispatcher {
 
         scope.dispatchEvent(_endEvent);
 
-        state = ControlState.None;
+        scope.state = ControlState.None;
     }
 
     function onPointerCancel(event) {
@@ -724,7 +664,7 @@ class OrbitControls extends EventDispatcher {
           }
 
           handleMouseDownDolly(event);
-          state = ControlState.Dolly;
+          scope.state = ControlState.Dolly;
           break;
 
         case MouseGesture.Rotate:
@@ -734,14 +674,14 @@ class OrbitControls extends EventDispatcher {
             }
 
             handleMouseDownPan(event);
-            state = ControlState.Pan;
+            scope.state = ControlState.Pan;
           } else {
             if (scope.enableRotate === false) {
               return;
             }
 
             handleMouseDownRotate(event);
-            state = ControlState.Rotate;
+            scope.state = ControlState.Rotate;
           }
 
           break;
@@ -753,30 +693,30 @@ class OrbitControls extends EventDispatcher {
             }
 
             handleMouseDownRotate(event);
-            state = ControlState.Rotate;
+            scope.state = ControlState.Rotate;
           } else {
             if (scope.enablePan === false) {
               return;
             }
 
             handleMouseDownPan(event);
-            state = ControlState.Pan;
+            scope.state = ControlState.Pan;
           }
 
           break;
 
         default:
 
-          state = ControlState.None;
+          scope.state = ControlState.None;
       }
 
-      if (state !== ControlState.None) {
+      if (scope.state !== ControlState.None) {
         scope.dispatchEvent(_startEvent);
       }
     }
 
     function onMouseMove(event) {
-      switch (state) {
+      switch (scope.state) {
         case ControlState.Rotate:
           if (scope.enableRotate === false) {
             return;
@@ -806,7 +746,7 @@ class OrbitControls extends EventDispatcher {
     }
 
     function onMouseWheel(event) {
-      if (scope.enabled === false || scope.enableZoom === false || state !== ControlState.None) return;
+      if (scope.enabled === false || scope.enableZoom === false || scope.state !== ControlState.None) return;
 
       event.preventDefault();
 
@@ -815,12 +755,6 @@ class OrbitControls extends EventDispatcher {
       handleMouseWheel(event);
 
       scope.dispatchEvent(_endEvent);
-    }
-
-    function onKeyDown(event) {
-      if (scope.enabled === false || scope.enablePan === false) return;
-
-      handleKeyDown(event);
     }
 
     function onTouchStart(event) {
@@ -835,7 +769,7 @@ class OrbitControls extends EventDispatcher {
                 return;
               }
               handleTouchStartRotate();
-              state = ControlState.TouchRotate;
+              scope.state = ControlState.TouchRotate;
               break;
 
             case TouchGesture.Pan:
@@ -844,11 +778,11 @@ class OrbitControls extends EventDispatcher {
               }
 
               handleTouchStartPan();
-              state = ControlState.TouchPan;
+              scope.state = ControlState.TouchPan;
               break;
 
             default:
-              state = ControlState.None;
+              scope.state = ControlState.None;
           }
 
           break;
@@ -862,7 +796,7 @@ class OrbitControls extends EventDispatcher {
               }
 
               handleTouchStartDollyPan();
-              state = ControlState.TouchDollyPan;
+              scope.state = ControlState.TouchDollyPan;
               break;
 
             case TouchGesture.DollyRotate:
@@ -871,20 +805,20 @@ class OrbitControls extends EventDispatcher {
               }
 
               handleTouchStartDollyRotate();
-              state = ControlState.TouchDollyRotate;
+              scope.state = ControlState.TouchDollyRotate;
               break;
 
             default:
-              state = ControlState.None;
+              scope.state = ControlState.None;
           }
 
           break;
 
         default:
-          state = ControlState.None;
+          scope.state = ControlState.None;
       }
 
-      if (state !== ControlState.None) {
+      if (scope.state !== ControlState.None) {
         scope.dispatchEvent(_startEvent);
       }
     }
@@ -892,7 +826,7 @@ class OrbitControls extends EventDispatcher {
     function onTouchMove(event) {
       trackPointer(event);
 
-      switch (state) {
+      switch (scope.state) {
         case ControlState.TouchRotate:
           if (scope.enableRotate === false) {
             return;
@@ -930,7 +864,7 @@ class OrbitControls extends EventDispatcher {
           break;
 
         default:
-          state = ControlState.None;
+          scope.state = ControlState.None;
       }
     }
 
@@ -985,10 +919,28 @@ class OrbitControls extends EventDispatcher {
     this.update();
   }
 
+  public listenToKeyEvents(surface: HTMLElement): void {
+    surface.addEventListener('keydown', this.onKeyDown);
+    this.keyEventsDom = surface;
+  }
+
   public saveState() {
     this.originalTarget.copy(this.target);
     this.originalPosition.copy(this.entity.position);
     this.originalZoom = this.camera.zoom;
+  }
+
+  public reset(): void {
+    this.target.copy(this.originalTarget);
+    this.entity.position.copy(this.originalPosition);
+    this.camera.zoom = this.originalZoom;
+
+    this.camera.updateProjectionMatrix();
+    this.dispatchEvent(_changeEvent);
+
+    this.update();
+
+    this.state = ControlState.None;
   }
 
   public getPolarAngle(): number {
@@ -1001,6 +953,56 @@ class OrbitControls extends EventDispatcher {
 
   public getDistance(): number {
     return this.entity.position.distanceTo(this.target);
+  }
+
+  private onKeyDown(event: KeyboardEvent): void {
+    if (this.enabled === false || this.enablePan === false) {
+      return;
+    }
+
+    this.handleKeyDown(event);
+  }
+
+  private handleKeyDown(event: KeyboardEvent): void {
+    let needsUpdate = false;
+
+    switch (event.code) {
+      case this.keys.up:
+        this.pan(0, this.keyPanSpeed);
+        needsUpdate = true;
+        break;
+
+      case this.keys.bottom:
+        this.pan(0, -this.keyPanSpeed);
+        needsUpdate = true;
+        break;
+
+      case this.keys.left:
+        this.pan(this.keyPanSpeed, 0);
+        needsUpdate = true;
+        break;
+
+      case this.keys.right:
+        this.pan(-this.keyPanSpeed, 0);
+        needsUpdate = true;
+        break;
+
+      default:
+    }
+
+    if (needsUpdate) {
+      // prevent the browser from scrolling on cursor keys
+      event.preventDefault();
+      this.update();
+    }
+  }
+
+  private getAutoRotationAngle(): number {
+    return 2 * Math.PI / 60 / 60 * this.autoRotateSpeed;
+  }
+
+  private getZoomScale(): number {
+    return 0.95 ** this.zoomSpeed;
   }
 
   private rotateLeft(angle: number): void {
