@@ -43,6 +43,17 @@ enum CameraType {
   Orthographic = 1,
 }
 
+enum ControlState {
+  None = -1,
+  Rotate = 0,
+  Dolly = 1,
+  Pan = 2,
+  TouchRotate = 3,
+  TouchPan = 4,
+  TouchDollyPan = 5,
+  TouchDollyRotate = 6,
+}
+
 // This set of controls performs orbiting, dollying (zooming), and panning.
 // Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
 //
@@ -212,7 +223,7 @@ class OrbitControls extends EventDispatcher {
 
       scope.update();
 
-      state = STATE.NONE;
+      state = ControlState.None;
     };
 
     // this method is exposed, but perhaps it would be better if we can make it private...
@@ -240,7 +251,7 @@ class OrbitControls extends EventDispatcher {
         // angle from z-axis around y-axis
         scope.spherical.setFromVector3(offset);
 
-        if (scope.autoRotate && state === STATE.NONE) {
+        if (scope.autoRotate && state === ControlState.None) {
           scope.rotateLeft(getAutoRotationAngle());
         }
 
@@ -355,18 +366,7 @@ class OrbitControls extends EventDispatcher {
 
     const scope = this;
 
-    const STATE = {
-      NONE: -1,
-      ROTATE: 0,
-      DOLLY: 1,
-      PAN: 2,
-      TOUCH_ROTATE: 3,
-      TOUCH_PAN: 4,
-      TOUCH_DOLLY_PAN: 5,
-      TOUCH_DOLLY_ROTATE: 6,
-    };
-
-    let state = STATE.NONE;
+    let state = ControlState.None;
 
     const EPS = 0.000001;
 
@@ -688,7 +688,7 @@ class OrbitControls extends EventDispatcher {
 
         scope.dispatchEvent(_endEvent);
 
-        state = STATE.NONE;
+        state = ControlState.None;
     }
 
     function onPointerCancel(event) {
@@ -723,7 +723,7 @@ class OrbitControls extends EventDispatcher {
           }
 
           handleMouseDownDolly(event);
-          state = STATE.DOLLY;
+          state = ControlState.Dolly;
           break;
 
         case MouseGesture.Rotate:
@@ -733,14 +733,14 @@ class OrbitControls extends EventDispatcher {
             }
 
             handleMouseDownPan(event);
-            state = STATE.PAN;
+            state = ControlState.Pan;
           } else {
             if (scope.enableRotate === false) {
               return;
             }
 
             handleMouseDownRotate(event);
-            state = STATE.ROTATE;
+            state = ControlState.Rotate;
           }
 
           break;
@@ -752,52 +752,52 @@ class OrbitControls extends EventDispatcher {
             }
 
             handleMouseDownRotate(event);
-            state = STATE.ROTATE;
+            state = ControlState.Rotate;
           } else {
             if (scope.enablePan === false) {
               return;
             }
 
             handleMouseDownPan(event);
-            state = STATE.PAN;
+            state = ControlState.Pan;
           }
 
           break;
 
         default:
 
-          state = STATE.NONE;
+          state = ControlState.None;
       }
 
-      if (state !== STATE.NONE) {
+      if (state !== ControlState.None) {
         scope.dispatchEvent(_startEvent);
       }
     }
 
     function onMouseMove(event) {
       switch (state) {
-        case STATE.ROTATE:
-
-          if (scope.enableRotate === false) return;
+        case ControlState.Rotate:
+          if (scope.enableRotate === false) {
+            return;
+          }
 
           handleMouseMoveRotate(event);
-
           break;
 
-        case STATE.DOLLY:
-
-          if (scope.enableZoom === false) return;
+        case ControlState.Dolly:
+          if (scope.enableZoom === false) {
+            return;
+          }
 
           handleMouseMoveDolly(event);
-
           break;
 
-        case STATE.PAN:
-
-          if (scope.enablePan === false) return;
+        case ControlState.Pan:
+          if (scope.enablePan === false) {
+            return;
+          }
 
           handleMouseMovePan(event);
-
           break;
 
         default:
@@ -805,7 +805,7 @@ class OrbitControls extends EventDispatcher {
     }
 
     function onMouseWheel(event) {
-      if (scope.enabled === false || scope.enableZoom === false || state !== STATE.NONE) return;
+      if (scope.enabled === false || scope.enableZoom === false || state !== ControlState.None) return;
 
       event.preventDefault();
 
@@ -830,24 +830,24 @@ class OrbitControls extends EventDispatcher {
 
           switch (scope.touches.one) {
             case TouchGesture.Rotate:
-              if (scope.enableRotate === false) return;
+              if (scope.enableRotate === false) {
+                return;
+              }
               handleTouchStartRotate();
-              state = STATE.TOUCH_ROTATE;
+              state = ControlState.TouchRotate;
               break;
 
             case TouchGesture.Pan:
-
-              if (scope.enablePan === false) return;
+              if (scope.enablePan === false) {
+                return;
+              }
 
               handleTouchStartPan();
-
-              state = STATE.TOUCH_PAN;
-
+              state = ControlState.TouchPan;
               break;
 
             default:
-
-              state = STATE.NONE;
+              state = ControlState.None;
           }
 
           break;
@@ -856,38 +856,34 @@ class OrbitControls extends EventDispatcher {
 
           switch (scope.touches.two) {
             case TouchGesture.DollyPan:
-
-              if (scope.enableZoom === false && scope.enablePan === false) return;
+              if (scope.enableZoom === false && scope.enablePan === false) {
+                return;
+              }
 
               handleTouchStartDollyPan();
-
-              state = STATE.TOUCH_DOLLY_PAN;
-
+              state = ControlState.TouchDollyPan;
               break;
 
             case TouchGesture.DollyRotate:
-
-              if (scope.enableZoom === false && scope.enableRotate === false) return;
+              if (scope.enableZoom === false && scope.enableRotate === false) {
+                return;
+              }
 
               handleTouchStartDollyRotate();
-
-              state = STATE.TOUCH_DOLLY_ROTATE;
-
+              state = ControlState.TouchDollyRotate;
               break;
 
             default:
-
-              state = STATE.NONE;
+              state = ControlState.None;
           }
 
           break;
 
         default:
-
-          state = STATE.NONE;
+          state = ControlState.None;
       }
 
-      if (state !== STATE.NONE) {
+      if (state !== ControlState.None) {
         scope.dispatchEvent(_startEvent);
       }
     }
@@ -896,49 +892,44 @@ class OrbitControls extends EventDispatcher {
       trackPointer(event);
 
       switch (state) {
-        case STATE.TOUCH_ROTATE:
-
-          if (scope.enableRotate === false) return;
+        case ControlState.TouchRotate:
+          if (scope.enableRotate === false) {
+            return;
+          }
 
           handleTouchMoveRotate(event);
-
           scope.update();
-
           break;
 
-        case STATE.TOUCH_PAN:
-
-          if (scope.enablePan === false) return;
+        case ControlState.TouchPan:
+          if (scope.enablePan === false) {
+            return;
+          }
 
           handleTouchMovePan(event);
-
           scope.update();
-
           break;
 
-        case STATE.TOUCH_DOLLY_PAN:
-
-          if (scope.enableZoom === false && scope.enablePan === false) return;
+        case ControlState.TouchDollyPan:
+          if (scope.enableZoom === false && scope.enablePan === false) {
+            return;
+          }
 
           handleTouchMoveDollyPan(event);
-
           scope.update();
-
           break;
 
-        case STATE.TOUCH_DOLLY_ROTATE:
-
-          if (scope.enableZoom === false && scope.enableRotate === false) return;
+        case ControlState.TouchDollyRotate:
+          if (scope.enableZoom === false && scope.enableRotate === false) {
+            return;
+          }
 
           handleTouchMoveDollyRotate(event);
-
           scope.update();
-
           break;
 
         default:
-
-          state = STATE.NONE;
+          state = ControlState.None;
       }
     }
 
