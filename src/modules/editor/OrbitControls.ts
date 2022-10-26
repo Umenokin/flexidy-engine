@@ -155,6 +155,9 @@ class OrbitControls extends EventDispatcher {
 
   private panOffset = new Vector3();
 
+  // the target DOM element for key events
+  private keyEventsDom: HTMLElement|null = null;
+
   constructor(
     entity: IEntity, surface: HTMLElement) {
     super();
@@ -201,16 +204,14 @@ class OrbitControls extends EventDispatcher {
     this.originalPosition = this.entity.position.clone();
     this.originalZoom = this.camera.zoom;
 
-    // the target DOM element for key events
-    this._domElementKeyEvents = null;
 
     //
     // public methods
     //
 
-    this.listenToKeyEvents = function (domEl) {
-      domEl.addEventListener('keydown', onKeyDown);
-      this._domElementKeyEvents = domElement;
+    this.listenToKeyEvents = function (surface: HTMLElement) {
+      surface.addEventListener('keydown', onKeyDown);
+      this.keyEventsDom = surface;
     };
 
     this.reset = function () {
@@ -353,8 +354,8 @@ class OrbitControls extends EventDispatcher {
       scope.domElement.removeEventListener('pointermove', onPointerMove);
       scope.domElement.removeEventListener('pointerup', onPointerUp);
 
-      if (scope._domElementKeyEvents !== null) {
-        scope._domElementKeyEvents.removeEventListener('keydown', onKeyDown);
+      if (scope.keyEventsDom !== null) {
+        scope.keyEventsDom.removeEventListener('keydown', onKeyDown);
       }
 
       // scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
