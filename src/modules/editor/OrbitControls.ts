@@ -235,10 +235,12 @@ class OrbitControls extends EventDispatcher {
     this.originalZoom = this.camera.zoom;
 
     this.onKeyDown = this.onKeyDown.bind(this);
-
-    //
-    // public methods
-    //
+    this.onMouseWheel = this.onMouseWheel.bind(this);
+    this.onContextMenu = this.onContextMenu.bind(this);
+    this.onPointerDown = this.onPointerDown.bind(this);
+    this.onPointerCancel = this.onPointerCancel.bind(this);
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onPointerUp = this.onPointerUp.bind(this);
 
     // this method is exposed, but perhaps it would be better if we can make it private...
     this.update = (function () {
@@ -278,7 +280,6 @@ class OrbitControls extends EventDispatcher {
         }
 
         // restrict theta to be between desired limits
-
         let min = scope.minAzimuthAngle;
         let max = scope.maxAzimuthAngle;
 
@@ -298,11 +299,8 @@ class OrbitControls extends EventDispatcher {
 
         // restrict phi to be between desired limits
         scope.spherical.phi = Math.max(scope.minPolarAngle, Math.min(scope.maxPolarAngle, scope.spherical.phi));
-
         scope.spherical.makeSafe();
-
         scope.spherical.radius *= scope.scale;
-
         // restrict radius to be between desired limits
         scope.spherical.radius = Math.max(scope.minDistance, Math.min(scope.maxDistance, scope.spherical.radius));
 
@@ -327,11 +325,9 @@ class OrbitControls extends EventDispatcher {
         if (scope.enableDamping === true) {
           scope.sphericalDelta.theta *= (1 - scope.dampingFactor);
           scope.sphericalDelta.phi *= (1 - scope.dampingFactor);
-
           scope.panOffset.multiplyScalar(1 - scope.dampingFactor);
         } else {
           scope.sphericalDelta.set(0, 0, 0);
-
           scope.panOffset.set(0, 0, 0);
         }
 
@@ -357,353 +353,16 @@ class OrbitControls extends EventDispatcher {
       };
     }());
 
-    this.dispose = function () {
-      scope.domElement.removeEventListener('contextmenu', onContextMenu);
-
-      scope.domElement.removeEventListener('pointerdown', onPointerDown);
-      scope.domElement.removeEventListener('pointercancel', onPointerCancel);
-      scope.domElement.removeEventListener('wheel', onMouseWheel);
-
-      scope.domElement.removeEventListener('pointermove', onPointerMove);
-      scope.domElement.removeEventListener('pointerup', onPointerUp);
-
-      if (scope.keyEventsDom !== null) {
-        scope.keyEventsDom.removeEventListener('keydown', this.onKeyDown);
-      }
-
-      // scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
-    };
-
     //
     // internals
     //
 
     const scope = this;
 
-    //
-    // event handlers - FSM: listen for events and reset state
-    //
-
-    function onPointerDown(event: PointerEvent) {
-      if (scope.enabled === false) return;
-
-      if (scope.pointers.length === 0) {
-        scope.domElement.setPointerCapture(event.pointerId);
-
-        scope.domElement.addEventListener('pointermove', onPointerMove);
-        scope.domElement.addEventListener('pointerup', onPointerUp);
-      }
-
-      //
-
-      addPointer(event);
-
-      if (event.pointerType === 'touch') {
-        onTouchStart(event);
-      } else {
-        onMouseDown(event);
-      }
-    }
-
-    function onPointerMove(event: PointerEvent) {
-      if (scope.enabled === false) return;
-
-      if (event.pointerType === 'touch') {
-        onTouchMove(event);
-      } else {
-        onMouseMove(event);
-      }
-    }
-
-    function onPointerUp(event: PointerEvent) {
-        removePointer(event);
-
-        if (scope.pointers.length === 0) {
-            scope.domElement.releasePointerCapture(event.pointerId);
-
-            scope.domElement.removeEventListener('pointermove', onPointerMove);
-            scope.domElement.removeEventListener('pointerup', onPointerUp);
-        }
-
-        scope.dispatchEvent(_endEvent);
-
-        scope.state = ControlState.None;
-    }
-
-    function onPointerCancel(event: PointerEvent) {
-      removePointer(event);
-    }
-
-    function onMouseDown(event: PointerEvent) {
-      let mouseAction;
-
-      switch (event.button) {
-        case 0:
-          mouseAction = scope.mouseButtons.left;
-          break;
-
-        case 1:
-          mouseAction = scope.mouseButtons.middle;
-          break;
-
-        case 2:
-          mouseAction = scope.mouseButtons.right;
-          break;
-
-        default:
-
-          mouseAction = -1;
-      }
-
-      switch (mouseAction) {
-        case MouseGesture.Dolly:
-          if (scope.enableZoom === false) {
-            return;
-          }
-
-          scope.handleMouseDownDolly(event);
-          scope.state = ControlState.Dolly;
-          break;
-
-        case MouseGesture.Rotate:
-          if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            if (scope.enablePan === false) {
-              return;
-            }
-
-            scope.handleMouseDownPan(event);
-            scope.state = ControlState.Pan;
-          } else {
-            if (scope.enableRotate === false) {
-              return;
-            }
-
-            scope.handleMouseDownRotate(event);
-            scope.state = ControlState.Rotate;
-          }
-
-          break;
-
-        case MouseGesture.Pan:
-          if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            if (scope.enableRotate === false) {
-              return;
-            }
-
-            scope.handleMouseDownRotate(event);
-            scope.state = ControlState.Rotate;
-          } else {
-            if (scope.enablePan === false) {
-              return;
-            }
-
-            scope.handleMouseDownPan(event);
-            scope.state = ControlState.Pan;
-          }
-
-          break;
-
-        default:
-
-          scope.state = ControlState.None;
-      }
-
-      if (scope.state !== ControlState.None) {
-        scope.dispatchEvent(_startEvent);
-      }
-    }
-
-    function onMouseMove(event: PointerEvent) {
-      switch (scope.state) {
-        case ControlState.Rotate:
-          if (scope.enableRotate === false) {
-            return;
-          }
-
-          scope.handleMouseMoveRotate(event);
-          break;
-
-        case ControlState.Dolly:
-          if (scope.enableZoom === false) {
-            return;
-          }
-
-          scope.handleMouseMoveDolly(event);
-          break;
-
-        case ControlState.Pan:
-          if (scope.enablePan === false) {
-            return;
-          }
-
-          scope.handleMouseMovePan(event);
-          break;
-
-        default:
-      }
-    }
-
-    function onMouseWheel(event: WheelEvent) {
-      if (scope.enabled === false || scope.enableZoom === false || scope.state !== ControlState.None) return;
-
-      event.preventDefault();
-
-      scope.dispatchEvent(_startEvent);
-
-      scope.handleMouseWheel(event);
-
-      scope.dispatchEvent(_endEvent);
-    }
-
-    function onTouchStart(event: PointerEvent) {
-      trackPointer(event);
-
-      switch (scope.pointers.length) {
-        case 1:
-
-          switch (scope.touches.one) {
-            case TouchGesture.Rotate:
-              if (scope.enableRotate === false) {
-                return;
-              }
-              scope.handleTouchStartRotate();
-              scope.state = ControlState.TouchRotate;
-              break;
-
-            case TouchGesture.Pan:
-              if (scope.enablePan === false) {
-                return;
-              }
-
-              scope.handleTouchStartPan();
-              scope.state = ControlState.TouchPan;
-              break;
-
-            default:
-              scope.state = ControlState.None;
-          }
-
-          break;
-
-        case 2:
-
-          switch (scope.touches.two) {
-            case TouchGesture.DollyPan:
-              if (scope.enableZoom === false && scope.enablePan === false) {
-                return;
-              }
-
-              scope.handleTouchStartDollyPan();
-              scope.state = ControlState.TouchDollyPan;
-              break;
-
-            case TouchGesture.DollyRotate:
-              if (scope.enableZoom === false && scope.enableRotate === false) {
-                return;
-              }
-
-              scope.handleTouchStartDollyRotate();
-              scope.state = ControlState.TouchDollyRotate;
-              break;
-
-            default:
-              scope.state = ControlState.None;
-          }
-
-          break;
-
-        default:
-          scope.state = ControlState.None;
-      }
-
-      if (scope.state !== ControlState.None) {
-        scope.dispatchEvent(_startEvent);
-      }
-    }
-
-    function onTouchMove(event: PointerEvent) {
-      trackPointer(event);
-
-      switch (scope.state) {
-        case ControlState.TouchRotate:
-          if (scope.enableRotate === false) {
-            return;
-          }
-
-          scope.handleTouchMoveRotate(event);
-          scope.update();
-          break;
-
-        case ControlState.TouchPan:
-          if (scope.enablePan === false) {
-            return;
-          }
-
-          scope.handleTouchMovePan(event);
-          scope.update();
-          break;
-
-        case ControlState.TouchDollyPan:
-          if (scope.enableZoom === false && scope.enablePan === false) {
-            return;
-          }
-
-          scope.handleTouchMoveDollyPan(event);
-          scope.update();
-          break;
-
-        case ControlState.TouchDollyRotate:
-          if (scope.enableZoom === false && scope.enableRotate === false) {
-            return;
-          }
-
-          scope.handleTouchMoveDollyRotate(event);
-          scope.update();
-          break;
-
-        default:
-          scope.state = ControlState.None;
-      }
-    }
-
-    function onContextMenu(event): void {
-      if (!scope.enabled) {
-        return;
-      }
-
-      event.preventDefault();
-    }
-
-    function addPointer(event: PointerEvent) {
-      scope.pointers.push(event);
-    }
-
-    function removePointer(event: PointerEvent) {
-      delete scope.pointerPositions[event.pointerId];
-
-      for (let i = 0; i < scope.pointers.length; i += 1) {
-        if (scope.pointers[i].pointerId === event.pointerId) {
-          scope.pointers.splice(i, 1);
-          return;
-        }
-      }
-    }
-
-    function trackPointer(event: PointerEvent) {
-      let position = scope.pointerPositions[event.pointerId];
-
-      if (position === undefined) {
-        position = new Vector2();
-        scope.pointerPositions[event.pointerId] = position;
-      }
-
-      position.set(event.pageX, event.pageY);
-    }
-
-    scope.domElement.addEventListener('contextmenu', onContextMenu);
-    scope.domElement.addEventListener('pointerdown', onPointerDown);
-    scope.domElement.addEventListener('pointercancel', onPointerCancel);
-    scope.domElement.addEventListener('wheel', onMouseWheel, { passive: false });
+    scope.domElement.addEventListener('contextmenu', this.onContextMenu);
+    scope.domElement.addEventListener('pointerdown', this.onPointerDown);
+    scope.domElement.addEventListener('pointercancel', this.onPointerCancel);
+    scope.domElement.addEventListener('wheel', this.onMouseWheel, { passive: false });
 
     // force an update at start
 
@@ -746,9 +405,334 @@ class OrbitControls extends EventDispatcher {
     return this.entity.position.distanceTo(this.target);
   }
 
+  public dispose(): void {
+    this.domElement.removeEventListener('contextmenu', this.onContextMenu);
+    this.domElement.removeEventListener('pointerdown', this.onPointerDown);
+    this.domElement.removeEventListener('pointercancel', this.onPointerCancel);
+    this.domElement.removeEventListener('wheel', this.onMouseWheel);
+    this.domElement.removeEventListener('pointermove', this.onPointerMove);
+    this.domElement.removeEventListener('pointerup', this.onPointerUp);
+
+    if (this.keyEventsDom !== null) {
+      this.keyEventsDom.removeEventListener('keydown', this.onKeyDown);
+    }
+    // scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
+  }
+
+  private trackPointer(event: PointerEvent): void {
+    let position = this.pointerPositions[event.pointerId];
+
+    if (position === undefined) {
+      position = new Vector2();
+      this.pointerPositions[event.pointerId] = position;
+    }
+
+    position.set(event.pageX, event.pageY);
+  }
+
+  private onPointerDown(event: PointerEvent): void {
+    if (this.enabled === false) return;
+
+    if (this.pointers.length === 0) {
+      this.domElement.setPointerCapture(event.pointerId);
+
+      this.domElement.addEventListener('pointermove', this.onPointerMove);
+      this.domElement.addEventListener('pointerup', this.onPointerUp);
+    }
+
+    this.addPointer(event);
+
+    if (event.pointerType === 'touch') {
+      this.onTouchStart(event);
+    } else {
+      this.onMouseDown(event);
+    }
+  }
+
+  private onPointerMove(event: PointerEvent) {
+    if (this.enabled === false) return;
+
+    if (event.pointerType === 'touch') {
+      this.onTouchMove(event);
+    } else {
+      this.onMouseMove(event);
+    }
+  }
+
+  private onPointerUp(event: PointerEvent) {
+    this.removePointer(event);
+
+    if (this.pointers.length === 0) {
+      this.domElement.releasePointerCapture(event.pointerId);
+      this.domElement.removeEventListener('pointermove', this.onPointerMove);
+      this.domElement.removeEventListener('pointerup', this.onPointerUp);
+    }
+
+    this.dispatchEvent(_endEvent);
+    this.state = ControlState.None;
+  }
+
+  private onPointerCancel(event: PointerEvent) {
+    this.removePointer(event);
+  }
+
+  private onContextMenu(event: MouseEvent): void {
+    if (!this.enabled) {
+      return;
+    }
+
+    event.preventDefault();
+  }
+
+  private onMouseWheel(event: WheelEvent): void {
+    if (this.enabled === false || this.enableZoom === false || this.state !== ControlState.None) {
+      return;
+    }
+
+    event.preventDefault();
+    this.dispatchEvent(_startEvent);
+    this.handleMouseWheel(event);
+    this.dispatchEvent(_endEvent);
+  }
+
+  private removePointer(event: PointerEvent) {
+    delete this.pointerPositions[event.pointerId];
+
+    for (let i = 0; i < this.pointers.length; i += 1) {
+      if (this.pointers[i].pointerId === event.pointerId) {
+        this.pointers.splice(i, 1);
+        return;
+      }
+    }
+  }
+
+  private onMouseMove(event: PointerEvent): void {
+    switch (this.state) {
+      case ControlState.Rotate:
+        if (!this.enableRotate) {
+          return;
+        }
+
+        this.handleMouseMoveRotate(event);
+        break;
+
+      case ControlState.Dolly:
+        if (!this.enableZoom) {
+          return;
+        }
+
+        this.handleMouseMoveDolly(event);
+        break;
+
+      case ControlState.Pan:
+        if (!this.enablePan) {
+          return;
+        }
+
+        this.handleMouseMovePan(event);
+        break;
+
+      default:
+    }
+  }
+
+  private addPointer(event: PointerEvent) {
+    this.pointers.push(event);
+  }
+
   private getSecondPointerPosition(event: PointerEvent): Vector2 {
     const pointer = (event.pointerId === this.pointers[0].pointerId) ? this.pointers[1] : this.pointers[0];
     return this.pointerPositions[pointer.pointerId];
+  }
+
+  private onMouseDown(event: PointerEvent): void {
+    let mouseAction;
+
+    switch (event.button) {
+      case 0:
+        mouseAction = this.mouseButtons.left;
+        break;
+
+      case 1:
+        mouseAction = this.mouseButtons.middle;
+        break;
+
+      case 2:
+        mouseAction = this.mouseButtons.right;
+        break;
+
+      default:
+
+        mouseAction = -1;
+    }
+
+    switch (mouseAction) {
+      case MouseGesture.Dolly:
+        if (this.enableZoom === false) {
+          return;
+        }
+
+        this.handleMouseDownDolly(event);
+        this.state = ControlState.Dolly;
+        break;
+
+      case MouseGesture.Rotate:
+        if (event.ctrlKey || event.metaKey || event.shiftKey) {
+          if (this.enablePan === false) {
+            return;
+          }
+
+          this.handleMouseDownPan(event);
+          this.state = ControlState.Pan;
+        } else {
+          if (this.enableRotate === false) {
+            return;
+          }
+
+          this.handleMouseDownRotate(event);
+          this.state = ControlState.Rotate;
+        }
+
+        break;
+
+      case MouseGesture.Pan:
+        if (event.ctrlKey || event.metaKey || event.shiftKey) {
+          if (this.enableRotate === false) {
+            return;
+          }
+
+          this.handleMouseDownRotate(event);
+          this.state = ControlState.Rotate;
+        } else {
+          if (this.enablePan === false) {
+            return;
+          }
+
+          this.handleMouseDownPan(event);
+          this.state = ControlState.Pan;
+        }
+
+        break;
+
+      default:
+
+        this.state = ControlState.None;
+    }
+
+    if (this.state !== ControlState.None) {
+      this.dispatchEvent(_startEvent);
+    }
+  }
+
+  private onTouchStart(event: PointerEvent): void {
+    this.trackPointer(event);
+
+    switch (this.pointers.length) {
+      case 1:
+
+        switch (this.touches.one) {
+          case TouchGesture.Rotate:
+            if (this.enableRotate === false) {
+              return;
+            }
+            this.handleTouchStartRotate();
+            this.state = ControlState.TouchRotate;
+            break;
+
+          case TouchGesture.Pan:
+            if (this.enablePan === false) {
+              return;
+            }
+
+            this.handleTouchStartPan();
+            this.state = ControlState.TouchPan;
+            break;
+
+          default:
+            this.state = ControlState.None;
+        }
+
+        break;
+
+      case 2:
+
+        switch (this.touches.two) {
+          case TouchGesture.DollyPan:
+            if (this.enableZoom === false && this.enablePan === false) {
+              return;
+            }
+
+            this.handleTouchStartDollyPan();
+            this.state = ControlState.TouchDollyPan;
+            break;
+
+          case TouchGesture.DollyRotate:
+            if (this.enableZoom === false && this.enableRotate === false) {
+              return;
+            }
+
+            this.handleTouchStartDollyRotate();
+            this.state = ControlState.TouchDollyRotate;
+            break;
+
+          default:
+            this.state = ControlState.None;
+        }
+
+        break;
+
+      default:
+        this.state = ControlState.None;
+    }
+
+    if (this.state !== ControlState.None) {
+      this.dispatchEvent(_startEvent);
+    }
+  }
+
+  private onTouchMove(event: PointerEvent) {
+    this.trackPointer(event);
+
+    switch (this.state) {
+      case ControlState.TouchRotate:
+        if (this.enableRotate === false) {
+          return;
+        }
+
+        this.handleTouchMoveRotate(event);
+        this.update();
+        break;
+
+      case ControlState.TouchPan:
+        if (this.enablePan === false) {
+          return;
+        }
+
+        this.handleTouchMovePan(event);
+        this.update();
+        break;
+
+      case ControlState.TouchDollyPan:
+        if (this.enableZoom === false && this.enablePan === false) {
+          return;
+        }
+
+        this.handleTouchMoveDollyPan(event);
+        this.update();
+        break;
+
+      case ControlState.TouchDollyRotate:
+        if (this.enableZoom === false && this.enableRotate === false) {
+          return;
+        }
+
+        this.handleTouchMoveDollyRotate(event);
+        this.update();
+        break;
+
+      default:
+        this.state = ControlState.None;
+    }
   }
 
   //
