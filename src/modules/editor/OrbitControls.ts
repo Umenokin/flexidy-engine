@@ -384,7 +384,7 @@ class OrbitControls extends EventDispatcher {
     // event callbacks - update the object state
     //
 
-    function handleMouseMoveDolly(event: PointerEvent) {
+    function handleMouseMoveDolly(event: PointerEvent): void {
       scope.dollyEnd.set(event.clientX, event.clientY);
 
       scope.dollyDelta.subVectors(scope.dollyEnd, scope.dollyStart);
@@ -400,7 +400,7 @@ class OrbitControls extends EventDispatcher {
       scope.update();
     }
 
-    function handleMouseMovePan(event: PointerEvent) {
+    function handleMouseMovePan(event: PointerEvent): void {
       scope.panEnd.set(event.clientX, event.clientY);
 
       scope.panDelta.subVectors(scope.panEnd, scope.panStart).multiplyScalar(scope.panSpeed);
@@ -854,7 +854,7 @@ class OrbitControls extends EventDispatcher {
       position.set(event.pageX, event.pageY);
     }
 
-    function getSecondPointerPosition(event) {
+    function getSecondPointerPosition(event: PointerEvent) {
       const pointer = (event.pointerId === scope.pointers[0].pointerId) ? scope.pointers[1] : scope.pointers[0];
 
       return scope.pointerPositions[pointer.pointerId];
@@ -977,15 +977,15 @@ class OrbitControls extends EventDispatcher {
     }
   }
 
-  private handleMouseDownRotate(event): void {
+  private handleMouseDownRotate(event: PointerEvent): void {
     this.rotateStart.set(event.clientX, event.clientY);
   }
 
-  private handleMouseDownDolly(event): void {
+  private handleMouseDownDolly(event: PointerEvent): void {
     this.dollyStart.set(event.clientX, event.clientY);
   }
 
-  private handleMouseDownPan(event): void {
+  private handleMouseDownPan(event: PointerEvent): void {
     this.panStart.set(event.clientX, event.clientY);
   }
 
