@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { Object3D } from 'three/src/core/Object3D';
-import { IEntity, DEG2RAD, Vector3, Quaternion, Immutable, IScene, ImmutableObject } from 'flexidy-engine';
+import { IEntity, DEG2RAD, CVector3, Vector3, Quaternion, Immutable, IScene, ImmutableObject } from 'flexidy-engine';
 import { IComponent } from 'flexidy-engine/component';
 import { Matrix4 } from 'flexidy-engine/math/matrix4';
 
@@ -23,7 +23,7 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     return this._parent;
   }
 
-  private set parent(parent: IEntity|null) {
+  private setParent(parent: IEntity|null) {
     this._parent = parent;
   }
 
@@ -39,16 +39,8 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     return this._components;
   }
 
-  public get position(): Immutable<Vector3> {
+  public get position(): CVector3 {
     return this._tempPosition.copy(this.object3js.position as unknown as Vector3);
-  }
-
-  public set position(value: Immutable<Vector3>) {
-    this.object3js.position.set(value.x, value.y, value.z);
-  }
-
-  public set lookAt(target: Immutable<Vector3>) {
-    this.object3js.lookAt(target.x, target.y, target.z);
   }
 
   public get quaternion(): Immutable<Quaternion> {
@@ -67,8 +59,15 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     public readonly object3js: TObject,
   ) {}
 
-  public setLookAt(x: number, y: number, z: number): this {
-    this.object3js.lookAt(x, y, z);
+  public setLookAt(vec: CVector3): this;
+  public setLookAt(x: number, y: number, z: number): this;
+  public setLookAt(x: CVector3|number, y?: number, z?: number): this {
+    if (z === undefined) {
+      const v = x as CVector3;
+      this.object3js.lookAt(v.x, v.y, v.z);
+    } else {
+      this.object3js.lookAt(x as number, y!, z);
+    }
     return this;
   }
 
@@ -97,8 +96,15 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     return this;
   }
 
-  public setPosition(x: number, y: number, z: number): this {
-    this.object3js.position.set(x, y, z);
+  public setPosition(vec: CVector3): this;
+  public setPosition(x: number, y: number, z: number): this;
+  public setPosition(x: CVector3|number, y?: number, z?: number): this {
+    if (z === undefined) {
+      const v = x as CVector3;
+      this.object3js.position.set(v.x, v.y, v.z);
+    } else {
+      this.object3js.position.set(x as number, y!, z);
+    }
     return this;
   }
 
@@ -112,10 +118,10 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     return null;
   }
 
-  public addChild(entity: Entity): this {
-    entity.parent = this;
-    this.object3js.add(entity.object3js);
-    this._children.push(entity);
+  public addChild(child: Entity): this {
+    child.setParent(this);
+    this.object3js.add(child.object3js);
+    this._children.push(child);
     return this;
   }
 
@@ -124,7 +130,7 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     if (index !== -1) {
       this.children.splice(index, 1);
       this.object3js.remove(entity.object3js);
-      entity.parent = null;
+      entity.setParent(null);
     }
 
     return this;
@@ -133,12 +139,18 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
   public addComponent(component: IComponent): this {
     this.components.push(component);
     component.onAttach(this);
+    component.active?.();
     return this;
   }
 
   public removeComponent(component: IComponent): this {
-    this.components.push(component);
-    component.onDetach(this);
+    const index = this.components.indexOf(component);
+    if (index !== -1) {
+      component.inactive?.();
+      this.children.splice(index, 1);
+      component.onDetach(this);
+    }
+
     return this;
   }
 

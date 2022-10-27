@@ -1,9 +1,8 @@
 import { IEditorModule } from 'flexidy-engine';
-import { Entity } from '../../entity';
-import { OrbitControls } from './orbit-controls';
+import { OrbitController } from './orbit-controller';
 
 export default class EditorModule implements IEditorModule {
-  createOrbitControls(entity: Entity, viewport: HTMLElement): OrbitControls {
-    return new OrbitControls(entity, viewport);
+  createOrbitController(viewport: HTMLElement): OrbitController {
+    return new OrbitController(viewport);
   }
 }
