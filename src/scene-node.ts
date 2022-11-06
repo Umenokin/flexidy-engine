@@ -1,13 +1,13 @@
 /* eslint-disable no-param-reassign */
 import { Object3D } from 'three/src/core/Object3D';
-import { IEntity, DEG2RAD, CVector3, Vector3, Quaternion, Immutable, IScene, ImmutableObject } from 'flexidy-engine';
+import { ISceneNode, DEG2RAD, CVector3, Vector3, Quaternion, Immutable, IScene, ImmutableObject } from 'flexidy-engine';
 import { IComponent } from 'flexidy-engine/component';
 import { Matrix4 } from 'flexidy-engine/math/matrix4';
 
-export class Entity<TObject extends Object3D = Object3D> implements IEntity {
-  private _parent: IEntity|null = null;
+export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNode {
+  private _parent: ISceneNode|null = null;
 
-  private _children: IEntity[] = [];
+  private _children: ISceneNode[] = [];
 
   private _components: IComponent[] = [];
 
@@ -19,11 +19,11 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
 
   private _tempMatrix = new Matrix4();
 
-  public get parent(): IEntity|null {
+  public get parent(): ISceneNode|null {
     return this._parent;
   }
 
-  private setParent(parent: IEntity|null) {
+  private setParent(parent: ISceneNode|null) {
     this._parent = parent;
   }
 
@@ -31,7 +31,7 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     return this._parent?.parentScene || null;
   }
 
-  public get children(): IEntity[] {
+  public get children(): ISceneNode[] {
     return this._children;
   }
 
@@ -118,19 +118,19 @@ export class Entity<TObject extends Object3D = Object3D> implements IEntity {
     return null;
   }
 
-  public addChild(child: Entity): this {
+  public addChild(child: SceneNode): this {
     child.setParent(this);
     this.object3js.add(child.object3js);
     this._children.push(child);
     return this;
   }
 
-  public removeChild(entity: Entity): this {
-    const index = this.children.indexOf(entity);
+  public removeChild(child: SceneNode): this {
+    const index = this.children.indexOf(child);
     if (index !== -1) {
       this.children.splice(index, 1);
-      this.object3js.remove(entity.object3js);
-      entity.setParent(null);
+      this.object3js.remove(child.object3js);
+      child.setParent(null);
     }
 
     return this;

@@ -1,8 +1,8 @@
 import { Scene as Scene3JS } from 'three/src/scenes/Scene';
 import { IScene } from 'flexidy-engine';
-import { Entity } from './entity';
+import { SceneNode } from './scene-node';
 
-export class Scene extends Entity<Scene3JS> implements IScene {
+export class Scene extends SceneNode<Scene3JS> implements IScene {
   // private behaviors: Behavior[] = [];
 
   public get parentScene(): IScene | null {

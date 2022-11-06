@@ -215,16 +215,16 @@ export class OrbitController extends Behavior {
   }
 
   public active(): void {
-    this.camera = this.entity.getComponentByType(PERSPECTIVE_CAMERA_COMPONENT_TYPE);
+    this.camera = this.node.getComponentByType(PERSPECTIVE_CAMERA_COMPONENT_TYPE);
     this.cameraType = CameraType.Perspective;
 
     if (!this.camera) {
-      this.camera = this.entity.getComponentByType(ORTHOGRAPHIC_CAMERA_COMPONENT_TYPE);
+      this.camera = this.node.getComponentByType(ORTHOGRAPHIC_CAMERA_COMPONENT_TYPE);
       this.cameraType = CameraType.Orthographic;
     }
 
     if (!this.camera) {
-      console.warn('Entity needs to have Camera component attached');
+      console.warn('Node needs to have Camera component attached');
     }
 
     this.enableZoom = this.hasCamera;
@@ -254,11 +254,11 @@ export class OrbitController extends Behavior {
 
     // for reset
     this.originalTarget.copy(this.target);
-    this.originalPosition.copy(this.entity.position);
+    this.originalPosition.copy(this.node.position);
     this.originalZoom = this.camera?.zoom || 1;
 
     // so camera.up is the orbit axis
-    this.quat = new Quaternion().setFromUnitVectors(this.entity.up, new Vector3(0, 1, 0));
+    this.quat = new Quaternion().setFromUnitVectors(this.node.up, new Vector3(0, 1, 0));
     this.quatInverse = this.quat.clone().invert();
 
     this.onKeyDown = this.onKeyDown.bind(this);
@@ -295,13 +295,13 @@ export class OrbitController extends Behavior {
 
   public saveState() {
     this.originalTarget.copy(this.target);
-    this.originalPosition.copy(this.entity.position);
+    this.originalPosition.copy(this.node.position);
     this.originalZoom = this.camera?.zoom || 1;
   }
 
   public reset(): void {
     this.target.copy(this.originalTarget);
-    this.entity.setPosition(this.originalPosition);
+    this.node.setPosition(this.originalPosition);
 
     if (this.camera) {
       this.camera.zoom = this.originalZoom;
@@ -321,12 +321,12 @@ export class OrbitController extends Behavior {
   }
 
   public getDistance(): number {
-    return this.entity.position.distanceTo(this.target);
+    return this.node.position.distanceTo(this.target);
   }
 
   public update(): void {
-    const entity = this.entity;
-    this.position.copy(entity.position);
+    const node = this.node;
+    this.position.copy(node.position);
     this.offset.copy(this.position).sub(this.target);
 
     // rotate offset to "y-axis-is-up" space
@@ -384,8 +384,8 @@ export class OrbitController extends Behavior {
     this.offset.applyQuaternion(this.quatInverse);
 
     this.position.copy(this.target).add(this.offset);
-    entity.setPosition(this.position);
-    entity.setLookAt(this.target);
+    node.setPosition(this.position);
+    node.setLookAt(this.target);
 
     if (this.enableDamping === true) {
       this.sphericalDelta.theta *= (1 - this.dampingFactor);
@@ -403,12 +403,12 @@ export class OrbitController extends Behavior {
     // using small-angle approximation cos(x/2) = 1 - x^2 / 8
 
     if (this.zoomChanged
-      || this.lastPosition.distanceToSquared(entity.position) > EPS
-      || 8 * (1 - this.lastQuaternion.dot(entity.quaternion)) > EPS
+      || this.lastPosition.distanceToSquared(node.position) > EPS
+      || 8 * (1 - this.lastQuaternion.dot(node.quaternion)) > EPS
     ) {
       this.emit('change');
-      this.lastPosition.copy(entity.position);
-      this.lastQuaternion.copy(entity.quaternion);
+      this.lastPosition.copy(node.position);
+      this.lastQuaternion.copy(node.quaternion);
       this.zoomChanged = false;
     }
   }
@@ -954,7 +954,7 @@ export class OrbitController extends Behavior {
       _tempVec3.setFromMatrixColumn(objectMatrix, 1);
     } else {
       _tempVec3.setFromMatrixColumn(objectMatrix, 0);
-      _tempVec3.crossVectors(this.entity.up, _tempVec3);
+      _tempVec3.crossVectors(this.node.up, _tempVec3);
     }
 
     _tempVec3.multiplyScalar(distance);
@@ -973,19 +973,19 @@ export class OrbitController extends Behavior {
       const cam = this.camera as IPerspectiveCamera;
 
       // perspective
-      let targetDistance = _tempVec3.copy(this.entity.position).sub(this.target).length();
+      let targetDistance = _tempVec3.copy(this.node.position).sub(this.target).length();
 
       // half of the fov ifs center to top of screen
       targetDistance *= Math.tan(((cam.fov / 2) * Math.PI) / 180.0);
 
       // we use only clientHeight here so aspect ratio does not distort speed
-      this.panLeft((2 * deltaX * targetDistance) / element.clientHeight, this.entity.matrix);
-      this.panUp((2 * deltaY * targetDistance) / element.clientHeight, this.entity.matrix);
+      this.panLeft((2 * deltaX * targetDistance) / element.clientHeight, this.node.matrix);
+      this.panUp((2 * deltaY * targetDistance) / element.clientHeight, this.node.matrix);
     } else {
       // orthographic
       const cam = this.camera as IOrthographicCamera;
-      this.panLeft((deltaX * (cam.right - cam.left)) / cam.zoom / element.clientWidth, this.entity.matrix);
-      this.panUp((deltaY * (cam.top - cam.bottom)) / cam.zoom / element.clientHeight, this.entity.matrix);
+      this.panLeft((deltaX * (cam.right - cam.left)) / cam.zoom / element.clientWidth, this.node.matrix);
+      this.panUp((deltaY * (cam.top - cam.bottom)) / cam.zoom / element.clientHeight, this.node.matrix);
     }
   }
 }

@@ -2,7 +2,7 @@ import { Clock } from 'three/src/core/Clock';
 import { Object3D } from 'three/src/core/Object3D';
 import { defaultModules, EngineBase, ModuleType, ModulesManager } from 'flexidy-engine';
 import { Scene } from './scene';
-import { Entity } from './entity';
+import { SceneNode } from './scene-node';
 
 export class Engine extends EngineBase {
   constructor() {
@@ -10,8 +10,8 @@ export class Engine extends EngineBase {
     this.on('start', this._start.bind(this));
   }
 
-  public createEntity(): Entity {
-    return new Entity(new Object3D());
+  public createSceneNode(): SceneNode {
+    return new SceneNode(new Object3D());
   }
 
   protected nativeCreateScene(): Scene {

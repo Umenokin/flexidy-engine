@@ -1,9 +1,12 @@
 import { PerspectiveCamera as PerspectiveCamera3JS } from 'three/src/cameras/PerspectiveCamera';
 import { OrthographicCamera as OrthographicCamera3JS } from 'three/src/cameras/OrthographicCamera';
-import { IRenderingModule, RendererOptions } from 'flexidy-engine';
+import { DirectionalLight as DirectionalLight3JS } from 'three/src/lights/DirectionalLight';
+import { ColorRepresentation, IRenderingModule, RendererOptions } from 'flexidy-engine';
 import { OrthographicCamera } from './cameras/orthographic-camera';
 import { PerspectiveCamera } from './cameras/perspective-camera';
 import { Renderer } from './renderer';
+import { DirectionalLight } from './lights/directional-light';
+import { Cast } from '../../casts/math';
 
 export default class RenderingModule implements IRenderingModule {
   private renderers = new Map<string, Renderer>();
@@ -21,7 +24,7 @@ export default class RenderingModule implements IRenderingModule {
       throw new Error(`Renderer with name "${name}" already exists`);
     }
 
-    const renderer = this.nativeCreateRenderer(opt);
+    const renderer = new Renderer(opt);
     this.renderers.set(name, renderer);
     return renderer;
   }
@@ -49,7 +52,8 @@ export default class RenderingModule implements IRenderingModule {
     return new OrthographicCamera(c3js);
   }
 
-  protected nativeCreateRenderer(options: RendererOptions): Renderer {
-    return new Renderer(options);
+  public createDirectionalLight(color?: ColorRepresentation, intensity?: number): DirectionalLight {
+    const light3js = new DirectionalLight3JS(color && Cast.color.to3js(color), intensity);
+    return new DirectionalLight(light3js);
   }
 }
