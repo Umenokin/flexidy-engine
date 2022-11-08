@@ -19,6 +19,10 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
 
   private _tempMatrix = new Matrix4();
 
+  public get uuid(): string {
+      return this.object3js.uuid;
+  }
+
   public get parent(): ISceneNode|null {
     return this._parent;
   }

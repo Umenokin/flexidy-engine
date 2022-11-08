@@ -10,8 +10,12 @@ export class Engine extends EngineBase {
     this.on('start', this._start.bind(this));
   }
 
-  public createSceneNode(): SceneNode {
-    return new SceneNode(new Object3D());
+  public createSceneNode(uuid?: string): SceneNode {
+    const object3d = new Object3D();
+    if (uuid) {
+      object3d.uuid = uuid;
+    }
+    return new SceneNode(object3d);
   }
 
   protected nativeCreateScene(): Scene {
