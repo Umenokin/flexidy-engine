@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { Object3D } from 'three/src/core/Object3D';
-import { ISceneNode, DEG2RAD, CVector3, Vector3, Quaternion, Immutable, IScene, ImmutableObject } from 'flexidy-engine';
+import { ISceneNode, DEG2RAD, CVector3, Vector3, Quaternion, IScene } from 'flexidy-engine';
 import { IComponent } from 'flexidy-engine/component';
 import { Matrix4 } from 'flexidy-engine/math/matrix4';
 
@@ -10,14 +10,6 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
   private _children: ISceneNode[] = [];
 
   private _components: IComponent[] = [];
-
-  private _tempPosition = new Vector3();
-
-  private _tempUp = new Vector3();
-
-  private _tempQuaternion = new Quaternion();
-
-  private _tempMatrix = new Matrix4();
 
   public get uuid(): string {
       return this.object3js.uuid;
@@ -41,22 +33,6 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
 
   public get components(): IComponent[] {
     return this._components;
-  }
-
-  public get position(): CVector3 {
-    return this._tempPosition.copy(this.object3js.position as unknown as Vector3);
-  }
-
-  public get quaternion(): Immutable<Quaternion> {
-    return this._tempQuaternion.copy(this.object3js.quaternion as unknown as Quaternion);
-  }
-
-  public get up(): ImmutableObject<Vector3> {
-    return this._tempUp.copy(this.object3js.up as unknown as Vector3);
-  }
-
-  public get matrix(): ImmutableObject<Matrix4> {
-    return this._tempMatrix.fromArray(this.object3js.matrix.elements);
   }
 
   constructor(
@@ -110,6 +86,25 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
       this.object3js.position.set(x as number, y!, z);
     }
     return this;
+  }
+
+  public getPosition(out = new Vector3()): Vector3 {
+    const pos = this.object3js.position;
+    return out.set(pos.x, pos.y, pos.z);
+  }
+
+  public getQuaternion(out = new Quaternion()): Quaternion {
+    const qaut = this.object3js.quaternion;
+    return out.set(qaut.x, qaut.y, qaut.z, qaut.w);
+  }
+
+  public getUp(out = new Vector3()): Vector3 {
+    const up = this.object3js.up;
+    return out.set(up.x, up.y, up.z);
+  }
+
+  public getMatrix(out = new Matrix4()): Matrix4 {
+    return out.fromArray(this.object3js.matrix.elements);
   }
 
   public getComponentByType<T extends IComponent>(type: number): T|null {

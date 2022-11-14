@@ -59,7 +59,10 @@ enum ControlState {
 const EPS = 0.000001;
 const TWO_PI = 2 * Math.PI;
 
-const _tempVec3 = new Vector3();
+const _tempVec31 = new Vector3();
+const _tempVec32 = new Vector3();
+const _tempQuat = new Quaternion();
+const _tempMat4 = new Matrix4();
 
 export class OrbitController extends Behavior {
   private camera: IOrthographicCamera|IPerspectiveCamera|null = null;
@@ -254,11 +257,11 @@ export class OrbitController extends Behavior {
 
     // for reset
     this.originalTarget.copy(this.target);
-    this.originalPosition.copy(this.node.position);
+    this.node.getPosition(this.originalPosition);
     this.originalZoom = this.camera?.zoom || 1;
 
     // so camera.up is the orbit axis
-    this.quat = new Quaternion().setFromUnitVectors(this.node.up, new Vector3(0, 1, 0));
+    this.quat = new Quaternion().setFromUnitVectors(this.node.getUp(), new Vector3(0, 1, 0));
     this.quatInverse = this.quat.clone().invert();
 
     this.onKeyDown = this.onKeyDown.bind(this);
@@ -295,7 +298,7 @@ export class OrbitController extends Behavior {
 
   public saveState() {
     this.originalTarget.copy(this.target);
-    this.originalPosition.copy(this.node.position);
+    this.node.getPosition(this.originalPosition);
     this.originalZoom = this.camera?.zoom || 1;
   }
 
@@ -321,12 +324,12 @@ export class OrbitController extends Behavior {
   }
 
   public getDistance(): number {
-    return this.node.position.distanceTo(this.target);
+    return this.node.getPosition(_tempVec31).distanceTo(this.target);
   }
 
   public update(): void {
     const node = this.node;
-    this.position.copy(node.position);
+    node.getPosition(this.position);
     this.offset.copy(this.position).sub(this.target);
 
     // rotate offset to "y-axis-is-up" space
@@ -403,12 +406,12 @@ export class OrbitController extends Behavior {
     // using small-angle approximation cos(x/2) = 1 - x^2 / 8
 
     if (this.zoomChanged
-      || this.lastPosition.distanceToSquared(node.position) > EPS
-      || 8 * (1 - this.lastQuaternion.dot(node.quaternion)) > EPS
+      || this.lastPosition.distanceToSquared(this.node.getPosition(_tempVec31)) > EPS
+      || 8 * (1 - this.lastQuaternion.dot(this.node.getQuaternion(_tempQuat))) > EPS
     ) {
       this.emit('change');
-      this.lastPosition.copy(node.position);
-      this.lastQuaternion.copy(node.quaternion);
+      node.getPosition(this.lastPosition);
+      node.getQuaternion(this.lastQuaternion);
       this.zoomChanged = false;
     }
   }
@@ -944,21 +947,21 @@ export class OrbitController extends Behavior {
   }
 
   private panLeft(distance: number, objectMatrix: Immutable<Matrix4>) {
-    _tempVec3.setFromMatrixColumn(objectMatrix, 0); // get X column of objectMatrix
-    _tempVec3.multiplyScalar(distance);
-    this.panOffset.add(_tempVec3);
+    _tempVec31.setFromMatrixColumn(objectMatrix, 0); // get X column of objectMatrix
+    _tempVec31.multiplyScalar(distance);
+    this.panOffset.add(_tempVec31);
   }
 
   private panUp(distance: number, objectMatrix: Immutable<Matrix4>) {
     if (this.screenSpacePanning === true) {
-      _tempVec3.setFromMatrixColumn(objectMatrix, 1);
+      _tempVec31.setFromMatrixColumn(objectMatrix, 1);
     } else {
-      _tempVec3.setFromMatrixColumn(objectMatrix, 0);
-      _tempVec3.crossVectors(this.node.up, _tempVec3);
+      _tempVec31.setFromMatrixColumn(objectMatrix, 0);
+      _tempVec31.crossVectors(this.node.getUp(_tempVec32), _tempVec31);
     }
 
-    _tempVec3.multiplyScalar(distance);
-    this.panOffset.add(_tempVec3);
+    _tempVec31.multiplyScalar(distance);
+    this.panOffset.add(_tempVec31);
   }
 
   // deltaX and deltaY are in pixels; right and down are positive
@@ -969,23 +972,25 @@ export class OrbitController extends Behavior {
 
     const element = this.domElement;
 
+    const mat = this.node.getMatrix(_tempMat4);
+
     if (this.cameraType === CameraType.Perspective) {
       const cam = this.camera as IPerspectiveCamera;
 
       // perspective
-      let targetDistance = _tempVec3.copy(this.node.position).sub(this.target).length();
+      let targetDistance = this.node.getPosition(_tempVec31).sub(this.target).length();
 
       // half of the fov ifs center to top of screen
       targetDistance *= Math.tan(((cam.fov / 2) * Math.PI) / 180.0);
 
       // we use only clientHeight here so aspect ratio does not distort speed
-      this.panLeft((2 * deltaX * targetDistance) / element.clientHeight, this.node.matrix);
-      this.panUp((2 * deltaY * targetDistance) / element.clientHeight, this.node.matrix);
+      this.panLeft((2 * deltaX * targetDistance) / element.clientHeight, mat);
+      this.panUp((2 * deltaY * targetDistance) / element.clientHeight, mat);
     } else {
       // orthographic
       const cam = this.camera as IOrthographicCamera;
-      this.panLeft((deltaX * (cam.right - cam.left)) / cam.zoom / element.clientWidth, this.node.matrix);
-      this.panUp((deltaY * (cam.top - cam.bottom)) / cam.zoom / element.clientHeight, this.node.matrix);
+      this.panLeft((deltaX * (cam.right - cam.left)) / cam.zoom / element.clientWidth, mat);
+      this.panUp((deltaY * (cam.top - cam.bottom)) / cam.zoom / element.clientHeight, mat);
     }
   }
 }
