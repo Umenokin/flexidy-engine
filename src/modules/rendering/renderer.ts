@@ -1,6 +1,6 @@
 import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer';
 import { IRenderer, RendererOptions } from 'flexidy-engine';
-import { Scene } from '../../scene';
+import { Scene } from '../scenes/scene';
 import { Camera } from './cameras/camera';
 
 export class Renderer implements IRenderer {

@@ -1,8 +1,8 @@
 import { BoxGeometry as ThreeBoxGeometry } from 'three/src/geometries/BoxGeometry';
-import { IGeometryModule } from 'flexidy-engine';
+import { IGeometryModule, Module } from 'flexidy-engine';
 import { BufferGeometry } from './buffer-geometry';
 
-export default class GeometryModule implements IGeometryModule {
+export default class GeometryModule extends Module implements IGeometryModule {
   public createBox(
     width = 1,
     height = 1,

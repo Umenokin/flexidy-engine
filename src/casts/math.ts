@@ -1,7 +1,8 @@
 import { Color as Color3JS } from 'three/src/math/Color';
 import { Vector3 as Vector33JS } from 'three/src/math/Vector3';
 
-import { Color, Vector3, Immutable, ColorRepresentation } from 'flexidy-engine';
+import { Color, Vector3, Immutable, ColorValue } from 'flexidy-engine';
+import { ColorRepresentation } from 'three/src/utils';
 
 const _tempColor3js = new Color3JS();
 const _tempVector33js = new Vector33JS();
@@ -10,7 +11,7 @@ const _tempVector3 = new Vector3();
 
 export const Cast = {
   color: {
-    to3js(color: ColorRepresentation): Immutable<Color3JS> {
+    to3js(color: ColorValue): Immutable<ColorRepresentation> {
       const c = color as Color;
       if (c.r !== undefined) {
         return _tempColor3js.setRGB(c.r, c.g, c.b);

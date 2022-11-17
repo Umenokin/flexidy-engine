@@ -9,10 +9,6 @@ export class Scene extends SceneNode<Scene3JS> implements IScene {
     return this;
   }
 
-  constructor() {
-    super(new Scene3JS());
-  }
-
   // public addBehavior(behavior: Behavior): void {
   //  this.behaviors.push(behavior);
   // }

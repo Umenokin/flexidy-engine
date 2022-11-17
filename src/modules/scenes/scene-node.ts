@@ -12,7 +12,11 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
   private _components: IComponent[] = [];
 
   public get uuid(): string {
-      return this.object3js.uuid;
+    return this.object3js.uuid;
+  }
+
+  public get name(): string|undefined {
+    return this.object3js.name;
   }
 
   public get parent(): ISceneNode|null {
