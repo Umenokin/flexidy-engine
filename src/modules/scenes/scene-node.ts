@@ -4,7 +4,17 @@ import { ISceneNode, DEG2RAD, CVector3, Vector3, Quaternion, IScene } from 'flex
 import { IComponent } from 'flexidy-engine/component';
 import { Matrix4 } from 'flexidy-engine/math/matrix4';
 
+// function node() {
+//   console.log('node(): factory evaluated');
+
+//   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+//     console.log('node(): called', target: any, propertyKey: string, descriptor: PropertyDescriptor);
+//   };
+// }
+
 export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNode {
+  private _isAwaken: boolean = false;
+
   private _parent: ISceneNode|null = null;
 
   private _children: ISceneNode[] = [];
@@ -146,6 +156,13 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
     return this;
   }
 
+  // public addComponent<T extends IComponent>(componentClass: ComponentConstructor<T>): this {
+  //   this._componentClasses.push(componentClass);
+  //   component.onAttach(this);
+  //   component.active?.();
+  //   return this;
+  // }
+
   public removeComponent(component: IComponent): this {
     const index = this.components.indexOf(component);
     if (index !== -1) {
@@ -167,6 +184,22 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
 
     for (let i = 0; i < this._children.length; i += 1) {
       this._children[i].update(deltaTime);
+    }
+  }
+
+  public awake(): void {
+    console.log('Awake');
+
+    if (this._isAwaken) {
+      return;
+    }
+
+    this._isAwaken = true;
+    const children = this._children;
+    const count = children.length;
+
+    for (let i = 0; i < count; i += 1) {
+      children[i].awake();
     }
   }
 }
