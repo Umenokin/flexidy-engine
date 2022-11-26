@@ -1,11 +1,19 @@
 import { Object3D } from 'three/src/core/Object3D';
 import { Scene as Scene3JS } from 'three/src/scenes/Scene';
-import { IScene, ISceneNode, IScenesModule, ScenesModuleBase } from 'flexidy-engine';
+import {
+  IScene,
+  ISceneNode,
+  IScenesModule,
+  IRaycaster,
+  ScenesModuleBase,
+} from 'flexidy-engine';
+
 import { SceneNode } from './scene-node';
 import { Scene } from './scene';
+import { Raycaster } from './raycaster';
 
 export default class ScenesModule extends ScenesModuleBase implements IScenesModule {
-  createSceneNode(uuid?: string, name?: string): ISceneNode {
+  public createSceneNode(uuid?: string, name?: string): ISceneNode {
     const object3d = new Object3D();
     if (uuid) {
       object3d.uuid = uuid;
@@ -16,6 +24,10 @@ export default class ScenesModule extends ScenesModuleBase implements IScenesMod
     }
 
     return new SceneNode(object3d);
+  }
+
+  public createRaycaster(): IRaycaster {
+    return new Raycaster();
   }
 
   protected nativeCreateScene(uuid?: string, name?: string): IScene {

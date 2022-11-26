@@ -5,6 +5,8 @@ import { SceneNode } from './modules/scenes/scene-node';
 export abstract class SceneComponent<TObject extends Object3D = Object3D> implements IComponent {
   public readonly abstract type: number;
 
+  public enabled: boolean = true;
+
   constructor(public readonly object3js: TObject) {}
 
   public onAttach(parent: SceneNode): void {

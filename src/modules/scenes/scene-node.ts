@@ -21,6 +21,8 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
 
   private _components: IComponent[] = [];
 
+  public enabled: boolean = true;
+
   public get uuid(): string {
     return this.object3js.uuid;
   }
@@ -169,7 +171,10 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
 
   public update(deltaTime: number): void {
     for (let i = 0; i < this._components.length; i += 1) {
-      this._components[i].onUpdate?.(deltaTime);
+      const component = this._components[i];
+      if (component.enabled && component.onUpdate) {
+        component.onUpdate(deltaTime);
+      }
     }
 
     for (let i = 0; i < this._children.length; i += 1) {
