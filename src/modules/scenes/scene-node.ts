@@ -12,7 +12,7 @@ import { Matrix4 } from 'flexidy-engine/math/matrix4';
 //   };
 // }
 
-export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNode {
+export class SceneNode implements ISceneNode {
   private _isAwaken: boolean = false;
 
   private _parent: ISceneNode|null = null;
@@ -21,7 +21,7 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
 
   private _components: IComponent[] = [];
 
-  public enabled: boolean = true;
+  public readonly object3js: Object3D;
 
   public get uuid(): string {
     return this.object3js.uuid;
@@ -51,9 +51,22 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
     return this._components;
   }
 
-  constructor(
-    public readonly object3js: TObject,
-  ) {}
+  constructor(uuid?: string, name?: string) {
+    this.object3js = this.initObject(uuid, name);
+  }
+
+  protected initObject(uuid?: string, name?: string): Object3D {
+    const object3d = new Object3D();
+    if (uuid) {
+      object3d.uuid = uuid;
+    }
+
+    if (name) {
+      object3d.name = name;
+    }
+
+    return object3d;
+  }
 
   public setLookAt(vec: CVector3): this;
   public setLookAt(x: number, y: number, z: number): this;

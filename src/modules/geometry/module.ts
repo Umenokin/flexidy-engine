@@ -1,4 +1,3 @@
-import { BoxGeometry as ThreeBoxGeometry } from 'three/src/geometries/BoxGeometry';
 import { IGeometryModule, Module } from 'flexidy-engine';
 import { BufferGeometry } from './buffer-geometry';
 
@@ -11,6 +10,6 @@ export default class GeometryModule extends Module implements IGeometryModule {
     heightSegments = 1,
     depthSegments = 1,
   ): BufferGeometry {
-    return new BufferGeometry(new ThreeBoxGeometry(width, height, depth, widthSegments, heightSegments, depthSegments));
+    return new BufferGeometry(width, height, depth, widthSegments, heightSegments, depthSegments);
   }
 }

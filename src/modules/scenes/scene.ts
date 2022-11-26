@@ -1,23 +1,23 @@
 import { Scene as Scene3JS } from 'three/src/scenes/Scene';
+import { Object3D } from 'three/src/core/Object3D';
 import { IScene } from 'flexidy-engine';
 import { SceneNode } from './scene-node';
 
-export class Scene extends SceneNode<Scene3JS> implements IScene {
-  // private behaviors: Behavior[] = [];
-
+export class Scene extends SceneNode implements IScene {
   public get parentScene(): IScene | null {
     return this;
   }
 
-  // public addBehavior(behavior: Behavior): void {
-  //  this.behaviors.push(behavior);
-  // }
+  protected initObject(uuid?: string, name?: string): Object3D {
+    const object3d = new Scene3JS();
+    if (uuid) {
+      object3d.uuid = uuid;
+    }
 
-  // public removeBehavior(behavior: Behavior): void {
-  //   const index = this.behaviors.indexOf(behavior);
+    if (name) {
+      object3d.name = name;
+    }
 
-  //   if (index !== -1) {
-  //     this.behaviors.splice(index, 1);
-  //   }
-  // }
+    return object3d;
+  }
 }
