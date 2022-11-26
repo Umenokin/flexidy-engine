@@ -152,21 +152,14 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
   public addComponent(component: IComponent): this {
     this.components.push(component);
     component.onAttach(this);
-    component.active?.();
+    component.onActive?.();
     return this;
   }
-
-  // public addComponent<T extends IComponent>(componentClass: ComponentConstructor<T>): this {
-  //   this._componentClasses.push(componentClass);
-  //   component.onAttach(this);
-  //   component.active?.();
-  //   return this;
-  // }
 
   public removeComponent(component: IComponent): this {
     const index = this.components.indexOf(component);
     if (index !== -1) {
-      component.inactive?.();
+      component.onInactive?.();
       this.children.splice(index, 1);
       component.onDetach(this);
     }
@@ -176,10 +169,7 @@ export class SceneNode<TObject extends Object3D = Object3D> implements ISceneNod
 
   public update(deltaTime: number): void {
     for (let i = 0; i < this._components.length; i += 1) {
-      const comp = this._components[i];
-      if (comp.update) {
-        comp.update(deltaTime);
-      }
+      this._components[i].onUpdate?.(deltaTime);
     }
 
     for (let i = 0; i < this._children.length; i += 1) {
