@@ -15,7 +15,9 @@
     "build:watch": "npm run build -- -w"
   },
   "dependencies": {
-    "three": "0.146.0",
+    "three": "0.146.0"
+  },
+  "peerDependencies": {
     "flexidy-engine": "file:../flexidy-engine/dist"
   },
   "devDependencies": {

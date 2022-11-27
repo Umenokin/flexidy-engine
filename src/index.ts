@@ -1,8 +1,23 @@
-export { Engine } from './engine';
+export * from 'flexidy-engine/constants';
 
-export { default as MeshesModule } from './modules/meshes/module';
-export { default as GeometryModule } from './modules/geometry/module';
-export { default as MaterialsModule } from './modules/materials/module';
-export { default as RenderingModule } from './modules/rendering/module';
-export { default as ResourcesModule } from './modules/resources/module';
-export { default as ScenesModule } from './modules/scenes/module';
+export * from './geometry';
+export * from './materials';
+export * from './math';
+export * from './meshes';
+export * from './rendering';
+export * from './scenes';
+export * from './engine';
+export * from './assets';
+
+export type {
+  Asset,
+  AssetFile,
+  IAssetLoader,
+} from 'flexidy-engine';
+
+export {
+  Behavior,
+  EventEmitter,
+  MouseGesture,
+  TouchGesture,
+} from 'flexidy-engine';

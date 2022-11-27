@@ -1,10 +1,30 @@
 import { Clock } from 'three/src/core/Clock';
-import { defaultModules, EngineBase, ModuleType, ModulesManager } from 'flexidy-engine';
+import { IEngine } from 'flexidy-engine';
+import { EventEmitter } from 'flexidy-engine/event-emitter';
+import { SceneManager } from './scenes/scene-manager';
 
-export class Engine extends EngineBase {
+export class Engine extends EventEmitter implements IEngine {
+  private _sceneManager: SceneManager|null = null;
+
+  public get sceneManager(): SceneManager {
+    if (!this._sceneManager) {
+      throw new Error('Resource manager was not set');
+    }
+
+    return this._sceneManager;
+  }
+
+  public set sceneManager(rm: SceneManager) {
+    this._sceneManager = rm;
+  }
+
   constructor() {
     super();
     this.on('start', this._start.bind(this));
+  }
+
+  public start(): void {
+    this.emit('start');
   }
 
   private _start(): void {
@@ -20,13 +40,5 @@ export class Engine extends EngineBase {
     };
 
     renderFrame();
-  }
-
-  public static async loadModules(modules: ModuleType[] = defaultModules): Promise<void> {
-    const moduleClasses = await Promise.all(modules.map((module) => import(`./modules/${module}/module.js`)));
-
-    modules.forEach((module, index) => {
-      ModulesManager.addModule(module, moduleClasses[index].default);
-    });
   }
 }
