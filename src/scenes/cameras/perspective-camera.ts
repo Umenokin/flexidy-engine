@@ -1,5 +1,5 @@
 import { PerspectiveCamera as PerspectiveCamera3JS } from 'three/src/cameras/PerspectiveCamera';
-import type { IPerspectiveCamera } from 'flexidy-engine/scenes/cameras/perspective-camera';
+import type { IPerspectiveCamera } from 'flexidy-engine-base/scenes/cameras/perspective-camera';
 import { Camera } from './camera';
 
 export class PerspectiveCamera extends Camera<PerspectiveCamera3JS> implements IPerspectiveCamera {

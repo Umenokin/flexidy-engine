@@ -1,5 +1,5 @@
 import { Material as Material3JS, MaterialParameters as MaterialParameters3JS } from 'three/src/materials/Material';
-import type { IMaterial, MaterialParams } from 'flexidy-engine';
+import type { IMaterial, MaterialParams } from 'flexidy-engine-base';
 
 export function convertMaterialParams(params?: MaterialParams): MaterialParameters3JS|undefined {
   if (!params) {

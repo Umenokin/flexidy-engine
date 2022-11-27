@@ -2,7 +2,7 @@ import {
   MeshPhysicalMaterial as PhysicalMaterial3JS,
   MeshPhysicalMaterialParameters as PhysicalMaterialParameters3JS,
 } from 'three/src/materials/MeshPhysicalMaterial';
-import type { IPhysicalMaterial, PhysicalMaterialParams } from 'flexidy-engine';
+import type { IPhysicalMaterial, PhysicalMaterialParams } from 'flexidy-engine-base';
 import { convertStandardParams } from './standard-material';
 import { Material } from './material';
 

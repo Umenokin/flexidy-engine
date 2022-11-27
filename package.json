@@ -1,24 +1,22 @@
 {
-  "name": "flexidy-engine-web",
-  "version": "0.0.1",
+  "name": "flexidy-engine",
+  "version": "0.0.2",
   "type": "module",
-  "main": "dist/flexidy-engine-web.js",
-  "module": "dist/flexidy-engine-web.ems/index.js",
-  "typings": "dist/flexidy-engine-web.d.ts",
+  "main": "dist/flexidy-engine.js",
+  "module": "dist/flexidy-engine.ems/index.js",
+  "typings": "dist/flexidy-engine.d.ts",
   "files": [
-    "dist/flexidy-engine-web.ems/**/*",
-    "dist/flexidy-engine-web.js",
-    "dist/flexidy-engine-web.d.ts"
+    "dist/flexidy-engine.ems/**/*",
+    "dist/flexidy-engine.js",
+    "dist/flexidy-engine.d.ts"
   ],
   "scripts": {
     "build": "rollup -c",
     "build:watch": "npm run build -- -w"
   },
   "dependencies": {
-    "three": "0.146.0"
-  },
-  "peerDependencies": {
-    "flexidy-engine": "file:../flexidy-engine/dist"
+    "three": "0.146.0",
+    "flexidy-engine-base": "file:../flexidy-engine-base/dist"
   },
   "devDependencies": {
     "@types/three": "0.146.0",

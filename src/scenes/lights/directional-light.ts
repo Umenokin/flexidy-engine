@@ -1,6 +1,6 @@
-import { ColorValue } from 'flexidy-engine/math/color';
+import { ColorValue } from 'flexidy-engine-base/math/color';
 import { DirectionalLight as DirectionalLight3JS } from 'three/src/lights/DirectionalLight';
-import type { IDirectionalLight } from 'flexidy-engine/scenes/lights/directional-light';
+import type { IDirectionalLight } from 'flexidy-engine-base/scenes/lights/directional-light';
 import { Light } from './light';
 import { Cast } from '../../casts/math';
 

@@ -1,4 +1,4 @@
-import type { Asset } from 'flexidy-engine/assets/asset';
+import type { Asset } from 'flexidy-engine-base/assets/asset';
 import { BufferGeometry } from '../../geometry';
 import { Material } from '../../materials';
 

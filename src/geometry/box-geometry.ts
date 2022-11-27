@@ -1,5 +1,5 @@
 import { BoxGeometry as BoxGeometry3JS } from 'three/src/geometries/BoxGeometry';
-import type { IBufferGeometry } from 'flexidy-engine';
+import type { IBufferGeometry } from 'flexidy-engine-base';
 import { BufferGeometry } from './buffer-geometry';
 
 export class BoxGeometry extends BufferGeometry<BoxGeometry3JS> implements IBufferGeometry {

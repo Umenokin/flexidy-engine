@@ -1,5 +1,5 @@
-import type { SceneAsset } from 'flexidy-engine/assets/scenes/scene-asset';
-import { CVector3 } from 'flexidy-engine/math/vector3';
+import type { SceneAsset } from 'flexidy-engine-base/assets/scenes/scene-asset';
+import { CVector3 } from 'flexidy-engine-base/math/vector3';
 import { Scene } from '../../../scenes/scene';
 import { Loader, SharedResources } from '../loader';
 

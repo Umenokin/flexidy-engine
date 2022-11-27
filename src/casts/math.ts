@@ -1,7 +1,7 @@
 import { Color as Color3JS } from 'three/src/math/Color';
 import { Vector3 as Vector33JS } from 'three/src/math/Vector3';
 
-import { Color, Vector3, Immutable, ColorValue } from 'flexidy-engine';
+import { Color, Vector3, Immutable, ColorValue } from 'flexidy-engine-base';
 import { ColorRepresentation } from 'three/src/utils';
 
 const _tempColor3js = new Color3JS();

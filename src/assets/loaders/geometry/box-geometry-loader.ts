@@ -1,4 +1,4 @@
-import type { BoxGeometryAsset } from 'flexidy-engine/assets/geometry/box-geometry-asset';
+import type { BoxGeometryAsset } from 'flexidy-engine-base/assets/geometry/box-geometry-asset';
 import { BoxGeometry, BufferGeometry } from '../../../geometry';
 import { Loader } from '../loader';
 

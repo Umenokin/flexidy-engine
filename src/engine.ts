@@ -1,6 +1,6 @@
 import { Clock } from 'three/src/core/Clock';
-import { IEngine } from 'flexidy-engine';
-import { EventEmitter } from 'flexidy-engine/event-emitter';
+import { IEngine } from 'flexidy-engine-base';
+import { EventEmitter } from 'flexidy-engine-base/event-emitter';
 import { SceneManager } from './scenes/scene-manager';
 
 export class Engine extends EventEmitter implements IEngine {

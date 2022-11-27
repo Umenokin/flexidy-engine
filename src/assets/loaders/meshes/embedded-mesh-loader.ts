@@ -1,4 +1,4 @@
-import type { EmbeddedMeshAsset } from 'flexidy-engine/assets/meshes/embedded-mesh-asset';
+import type { EmbeddedMeshAsset } from 'flexidy-engine-base/assets/meshes/embedded-mesh-asset';
 import { Mesh } from '../../../meshes';
 import { Loader, SharedResources } from '../loader';
 

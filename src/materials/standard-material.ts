@@ -1,7 +1,7 @@
 import {
   MeshStandardMaterial as StandardMaterial3JS,
   MeshStandardMaterialParameters as StandardMaterialParams3JS } from 'three/src/materials/MeshStandardMaterial';
-import type { IStandardMaterial, StandardMaterialParams } from 'flexidy-engine';
+import type { IStandardMaterial, StandardMaterialParams } from 'flexidy-engine-base';
 import { Cast } from '../casts/math';
 
 import { convertMaterialParams, Material } from './material';

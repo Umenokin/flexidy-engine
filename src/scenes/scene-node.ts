@@ -1,8 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { Object3D } from 'three/src/core/Object3D';
-import { ISceneNode, DEG2RAD, CVector3, Vector3, Quaternion } from 'flexidy-engine';
-import { ComponentConstructor, IComponent } from 'flexidy-engine/component';
-import { Matrix4 } from 'flexidy-engine/math/matrix4';
+import { ISceneNode, DEG2RAD, CVector3, Vector3, Quaternion, Matrix4 } from 'flexidy-engine-base';
+import { ComponentConstructor, IComponent } from 'flexidy-engine-base/component';
 import type { Scene } from './scene';
 
 // function node() {

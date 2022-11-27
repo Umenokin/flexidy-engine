@@ -1,4 +1,4 @@
-export * from 'flexidy-engine/constants';
+export * from 'flexidy-engine-base/constants';
 
 export * from './geometry';
 export * from './materials';
@@ -13,11 +13,14 @@ export type {
   Asset,
   AssetFile,
   IAssetLoader,
-} from 'flexidy-engine';
+  Immutable,
+  ImmutableArray,
+  ImmutableObject,
+} from 'flexidy-engine-base';
 
 export {
   Behavior,
   EventEmitter,
   MouseGesture,
   TouchGesture,
-} from 'flexidy-engine';
+} from 'flexidy-engine-base';

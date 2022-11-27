@@ -1,5 +1,5 @@
 import { Mesh as Mesh3JS } from 'three/src/objects/Mesh';
-import type { IMesh } from 'flexidy-engine/meshes/mesh';
+import type { IMesh } from 'flexidy-engine-base/meshes/mesh';
 import { BufferGeometry } from '../geometry/buffer-geometry';
 import { Material } from '../materials/material';
 import { SceneComponent } from '../scenes/scene-component';

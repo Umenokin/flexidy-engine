@@ -1,5 +1,5 @@
-import { AssetFile } from 'flexidy-engine/assets/asset-file';
-import type { IAssetLoader } from 'flexidy-engine/assets/asset-loader';
+import { AssetFile } from 'flexidy-engine-base/assets/asset-file';
+import type { IAssetLoader } from 'flexidy-engine-base/assets/asset-loader';
 
 export class AssetLoader implements IAssetLoader {
   loadAsset<Type extends AssetFile<string, unknown>>(_path: string): Promise<Type> {

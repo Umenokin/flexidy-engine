@@ -5,7 +5,7 @@ import type {
   GeometryAsset,
   IAssetLoader,
   ISceneManager,
-} from 'flexidy-engine';
+} from 'flexidy-engine-base';
 
 import { Loader, SharedResources } from '../assets/loaders/loader';
 import { BoxGeometryLoader } from '../assets/loaders/geometry/box-geometry-loader';
