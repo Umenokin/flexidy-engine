@@ -1,5 +1,5 @@
 import { Material as Material3JS, MaterialParameters as MaterialParameters3JS } from 'three/src/materials/Material';
-import type { IMaterial, MaterialParams } from 'flexidy-engine-base';
+import type { IMaterial, MaterialParams } from 'flexidy-engine-base/interfaces/materials/material';
 
 export function convertMaterialParams(params?: MaterialParams): MaterialParameters3JS|undefined {
   if (!params) {
@@ -27,10 +27,12 @@ export function convertMaterialParams(params?: MaterialParams): MaterialParamete
   return params3js;
 }
 
-export class Material<TMat extends Material3JS = any> implements IMaterial {
+export abstract class Material<TMat extends Material3JS = any> implements IMaterial {
   public material3js: TMat;
 
   constructor(material: TMat) {
     this.material3js = material;
   }
+
+  abstract dispose(): void;
 }

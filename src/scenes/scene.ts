@@ -1,6 +1,6 @@
 import { Scene as Scene3JS } from 'three/src/scenes/Scene';
 import { Object3D } from 'three/src/core/Object3D';
-import { IScene } from 'flexidy-engine-base';
+import { IScene } from 'flexidy-engine-base/interfaces/scenes/scene';
 import { SceneNode } from './scene-node';
 
 export class Scene extends SceneNode implements IScene {

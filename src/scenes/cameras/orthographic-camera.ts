@@ -1,5 +1,5 @@
 import { OrthographicCamera as OrthographicCamera3JS } from 'three/src/cameras/OrthographicCamera';
-import type { IOrthographicCamera } from 'flexidy-engine-base/scenes/cameras/orthographic-camera';
+import type { IOrthographicCamera } from 'flexidy-engine-base/interfaces/scenes/cameras/orthographic-camera';
 import { Camera } from './camera';
 
 export class OrthographicCamera extends Camera<OrthographicCamera3JS> implements IOrthographicCamera {
@@ -40,5 +40,9 @@ export class OrthographicCamera extends Camera<OrthographicCamera3JS> implements
     far?: number,
   ) {
     super(new OrthographicCamera3JS(left, right, top, bottom, near, far));
+  }
+
+  public dispose(): void {
+    throw new Error('Needs to be implemented');
   }
 }

@@ -1,5 +1,5 @@
 import { Clock } from 'three/src/core/Clock';
-import { IEngine } from 'flexidy-engine-base';
+import { IEngine } from 'flexidy-engine-base/interfaces/engine';
 import { EventEmitter } from 'flexidy-engine-base/event-emitter';
 import { SceneManager } from './scenes/scene-manager';
 
@@ -21,6 +21,10 @@ export class Engine extends EventEmitter implements IEngine {
   constructor() {
     super();
     this.on('start', this._start.bind(this));
+  }
+
+  public dispose(): void {
+      throw new Error('Needs to be implemented');
   }
 
   public start(): void {

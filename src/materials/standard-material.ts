@@ -1,7 +1,7 @@
 import {
   MeshStandardMaterial as StandardMaterial3JS,
   MeshStandardMaterialParameters as StandardMaterialParams3JS } from 'three/src/materials/MeshStandardMaterial';
-import type { IStandardMaterial, StandardMaterialParams } from 'flexidy-engine-base';
+import type { IStandardMaterial, StandardMaterialParams } from 'flexidy-engine-base/interfaces/materials/standard-material';
 import { Cast } from '../casts/math';
 
 import { convertMaterialParams, Material } from './material';
@@ -33,5 +33,9 @@ export function convertStandardParams(params?: StandardMaterialParams): Standard
 export class StandardMaterial extends Material<StandardMaterial3JS> implements IStandardMaterial {
   constructor(params?: StandardMaterialParams) {
     super(new StandardMaterial3JS(convertStandardParams(params)));
+  }
+
+  public dispose(): void {
+    throw new Error('Needs to be implemented');
   }
 }

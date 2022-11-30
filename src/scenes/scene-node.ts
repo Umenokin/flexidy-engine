@@ -1,7 +1,11 @@
 /* eslint-disable no-param-reassign */
 import { Object3D } from 'three/src/core/Object3D';
-import { ISceneNode, DEG2RAD, CVector3, Vector3, Quaternion, Matrix4 } from 'flexidy-engine-base';
-import { ComponentConstructor, IComponent } from 'flexidy-engine-base/component';
+import { DEG2RAD  } from 'flexidy-engine-base/core/math/math';
+import { CVector3, Vector3 } from 'flexidy-engine-base/core/math/vector3';
+import { Quaternion } from 'flexidy-engine-base/core/math/quaternion';
+import { Matrix4 } from 'flexidy-engine-base/core/math/matrix4';
+import { ISceneNode } from 'flexidy-engine-base/interfaces/scenes/scene-node';
+import { ComponentConstructor, IComponent } from 'flexidy-engine-base/interfaces/component';
 import type { Scene } from './scene';
 
 // function node() {
@@ -53,6 +57,13 @@ export class SceneNode implements ISceneNode {
 
   constructor(uuid?: string, name?: string) {
     this.object3js = this.initObject(uuid, name);
+    this.object3js.userData = { node: this };
+  }
+
+  public dispose(): void {
+    this.object3js.userData = {};
+    this._components.forEach((component) => component.dispose());
+    this._children.forEach((child) => child.dispose());
   }
 
   protected initObject(uuid?: string, name?: string): Object3D {

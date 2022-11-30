@@ -1,8 +1,7 @@
 import { BoxGeometry as BoxGeometry3JS } from 'three/src/geometries/BoxGeometry';
-import type { IBufferGeometry } from 'flexidy-engine-base';
 import { BufferGeometry } from './buffer-geometry';
 
-export class BoxGeometry extends BufferGeometry<BoxGeometry3JS> implements IBufferGeometry {
+export class BoxGeometry extends BufferGeometry<BoxGeometry3JS> {
   constructor(
     width = 1,
     height = 1,
@@ -12,5 +11,9 @@ export class BoxGeometry extends BufferGeometry<BoxGeometry3JS> implements IBuff
     depthSegments = 1,
   ) {
     super(new BoxGeometry3JS(width, height, depth, widthSegments, heightSegments, depthSegments));
+  }
+
+  public dispose(): void {
+    throw new Error('Needs to be implemented');
   }
 }

@@ -1,5 +1,5 @@
+import type { ICamera } from 'flexidy-engine-base/interfaces/scenes/cameras/camera';
 import { Camera as Camera3JS } from 'three/src/cameras/Camera';
-import type { ICamera } from 'flexidy-engine-base/scenes/cameras/camera';
 import { SceneComponent } from '../scene-component';
 
 export abstract class Camera<TCam extends Camera3JS = Camera3JS> extends SceneComponent<TCam> implements ICamera {
@@ -13,4 +13,6 @@ export abstract class Camera<TCam extends Camera3JS = Camera3JS> extends SceneCo
     super(camera3js);
     this.object3js.rotateY(Math.PI);
   }
+
+  abstract dispose(): void;
 }
