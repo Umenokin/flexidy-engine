@@ -25,6 +25,8 @@ export class SceneNode implements ISceneNode {
 
   private _components: IComponent[] = [];
 
+  private _componentsHash = new Map<ComponentConstructor<IComponent>, number>();
+
   public readonly object3js: Object3D;
 
   public get uuid(): string {
@@ -147,12 +149,10 @@ export class SceneNode implements ISceneNode {
     return out.fromArray(this.object3js.matrix.elements);
   }
 
-  public getComponentByType<T extends IComponent>(Type: ComponentConstructor<IComponent>): T|null {
-    for (let i = 0; i < this._components.length; i += 1) {
-      const component = this._components[i];
-      if (component instanceof Type) {
-        return this._components[i] as T;
-      }
+  public getComponent<T extends IComponent>(Type: ComponentConstructor<T>): T|null {
+    const oneBaseIndex =  this._componentsHash.get(Type);
+    if (oneBaseIndex) {
+      return this._components[oneBaseIndex - 1] as T;
     }
 
     return null;
@@ -176,20 +176,33 @@ export class SceneNode implements ISceneNode {
     return this;
   }
 
-  public addComponent(component: IComponent): this {
+  public addComponent<T extends IComponent>(component: T): this {
+    const constructor = component.constructor as ComponentConstructor<T>;
+    if (this._componentsHash.has(constructor)) {
+      return this;
+    }
+
     this.components.push(component);
+    this._componentsHash.set(constructor, this.components.length);
     component.onAttach(this);
     component.onActive?.();
     return this;
   }
 
-  public removeComponent(component: IComponent): this {
-    const index = this.components.indexOf(component);
-    if (index !== -1) {
-      component.onInactive?.();
-      this.children.splice(index, 1);
-      component.onDetach(this);
+  public removeComponent<T extends IComponent>(component: T): this {
+    const constructor = component.constructor as ComponentConstructor<T>;
+    const oneBasedIndex = this._componentsHash.get(constructor);
+
+    if (!oneBasedIndex) {
+      return this;
     }
+
+    this._componentsHash.delete(constructor);
+
+    const index = oneBasedIndex - 1;
+    component.onInactive?.();
+    this.children.splice(index, 1);
+    component.onDetach(this);
 
     return this;
   }

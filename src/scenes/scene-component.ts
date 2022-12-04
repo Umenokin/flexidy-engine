@@ -2,6 +2,11 @@ import { Object3D } from 'three/src/core/Object3D';
 import { IComponent } from 'flexidy-engine-base/interfaces/component';
 import { SceneNode } from './scene-node';
 
+export type ComponentUserData = {
+  node: SceneNode,
+  component: IComponent
+};
+
 export abstract class SceneComponent<TObject extends Object3D = Object3D> implements IComponent {
   public enabled: boolean = true;
 
@@ -12,7 +17,7 @@ export abstract class SceneComponent<TObject extends Object3D = Object3D> implem
     this.object3js.userData = {
       node: parent,
       component: this,
-    };
+    } as ComponentUserData;
   }
 
   public onDetach(parent: SceneNode): void {

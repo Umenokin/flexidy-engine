@@ -16,6 +16,7 @@ export type {
   Immutable,
   ImmutableArray,
   ImmutableObject,
+  IntersectInfo,
 } from 'flexidy-engine-base';
 
 export {
@@ -23,4 +24,8 @@ export {
   EventEmitter,
   MouseGesture,
   TouchGesture,
+} from 'flexidy-engine-base';
+
+export {
+  List,
 } from 'flexidy-engine-base';
