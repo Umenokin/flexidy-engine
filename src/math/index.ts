@@ -1,3 +1,7 @@
+import { Frustum } from 'flexidy-engine-base/core/math/frustum';
+import { CBox3, Box3 } from 'flexidy-engine-base/core/math/box3';
+import { CPlane, Plane } from 'flexidy-engine-base/core/math/plane';
+import { CSphere, Sphere } from 'flexidy-engine-base/core/math/sphere';
 import { Color, ColorValue } from 'flexidy-engine-base/core/math/color';
 import { CVector2, Vector2 } from 'flexidy-engine-base/core/math/vector2';
 import { CVector3, Vector3 } from 'flexidy-engine-base/core/math/vector3';
@@ -21,7 +25,11 @@ export {
   // floor,
   // generateUUID,
   // radToDeg,
+  Box3,
   Color,
+  Frustum,
+  Plane,
+  Sphere,
   Vector2,
   Vector3,
   Vector4,
@@ -32,6 +40,9 @@ export {
 };
 
 export type {
+  CBox3,
+  CPlane,
+  CSphere,
   CVector2,
   CVector3,
   CVector4,

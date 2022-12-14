@@ -149,6 +149,10 @@ export class SceneNode implements ISceneNode {
     return out.fromArray(this.object3js.matrix.elements);
   }
 
+  public getWorldMatrix(out: Matrix4): Matrix4 {
+    return out.fromArray(this.object3js.matrixWorld.elements);
+  }
+
   public getComponent<T extends IComponent>(Type: ComponentConstructor<T>): T|null {
     const oneBaseIndex =  this._componentsHash.get(Type);
     if (oneBaseIndex) {

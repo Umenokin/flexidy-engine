@@ -24,7 +24,7 @@ export class Raycaster implements IRaycaster {
     intersects = new List<IntersectInfo<SceneNode, IComponent>>(),
   ): List<IntersectInfo> {
     const intersects3JS = this.raycaster3js.intersectObject(node.object3js, recursive);
-    intersects3JS.forEach((int, i) => {
+    intersects3JS.forEach((int) => {
       const userData = int.object.userData as ComponentUserData;
       intersects.push({
         node: userData.node,
